@@ -580,5 +580,5 @@ int main(int argc, char *argv[])
     /* test each function */
     errors = run_tests();
 
-    return 0;
+    return errors;
 }

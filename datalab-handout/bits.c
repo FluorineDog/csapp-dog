@@ -176,7 +176,7 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  // 0x FFFF FFFF
+
   int k,s,t,f;
   int sign = 0x1 << 31;
   int top = x & sign;
@@ -203,10 +203,8 @@ int bitCount(int x) {
   t = (f&s);
   f = (f^t) + (t>>8);
 
-  s = 1 << x ;
-  t = (f&s);
-  f = (f^t) + (t>>16);
-  return f;
+  f = ((f >> 16) + f) & 0xFF;
+  return f + !!top;
 }
 /* 
  * bang - Compute !x without using !
@@ -216,7 +214,13 @@ int bitCount(int x) {
  *   Rating: 4 
  */
 int bang(int x) {
-  return 2;
+  int f = x;
+  f = f >> 16 | f;
+  f = f >> 8 | f;
+  f = f >> 4 | f;
+  f = f >> 2 | f;
+  f = f >> 1 | f;
+  return (f&1)^1;
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -225,7 +229,7 @@ int bang(int x) {
  *   Rating: 1
  */
 int tmin(void) {
-  return 2;
+  return 1 << 31;
 }
 /* 
  * fitsBits - return 1 if x can be represented as an 
@@ -237,7 +241,12 @@ int tmin(void) {
  *   Rating: 2
  */
 int fitsBits(int x, int n) {
-  return 2;
+  // 2^(n-1) ---x--- 2^(n-1) - 1
+  int f, offset;
+  offset = (0x1F^n) + 1; // 32 - n
+  f = x << offset;
+  f = f >> offset;
+  return !(f^x);
 }
 /* 
  * divpwr2 - Compute x/(2^n), for 0 <= n <= 30
@@ -248,7 +257,11 @@ int fitsBits(int x, int n) {
  *   Rating: 2
  */
 int divpwr2(int x, int n) {
-    return 2;
+  int f,s;
+  f = ~x+1;
+  s = f >> 31;
+  f = ((f+s) >> n) +(~s+1);
+  return ~f+1;
 }
 /* 
  * negate - return -x 
@@ -258,7 +271,7 @@ int divpwr2(int x, int n) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x+1;
 }
 /* 
  * isPositive - return 1 if x > 0, return 0 otherwise 
@@ -268,7 +281,7 @@ int negate(int x) {
  *   Rating: 3
  */
 int isPositive(int x) {
-  return 2;
+  return !((x>>31) | !x);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -278,7 +291,13 @@ int isPositive(int x) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int a,b,s,e, m;
+  a = (x>>31);
+  b = ~(y>>31);
+  s = (x + ~y + 1)>>31;
+  e = !(x^y);
+  m = s|e;
+  return ((a&b)|(a&m)|(b&m))&0x1;
 }
 /*
  * ilog2 - return floor(log base 2 of x), where x > 0
@@ -288,7 +307,25 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4
  */
 int ilog2(int x) {
-  return 2;
+  int f, k, res=0;
+  f = x;
+  k = (!!(f >> 16)) << 4;
+  res = res + k;
+  f = f >> k;
+
+  k = (!!(f >> 8)) << 3;
+  res = res + k;
+  f = f >> k;
+
+  k = (!!(f >> 4)) << 2;
+  res = res + k;
+  f = f >> k;
+
+  k = (!!(f >> 2)) << 1;
+  res = res + k;
+  f = f >> k;
+  res = res + (f>>1);
+  return res;
 }
 /* 
  * float_neg - Return bit-level equivalent of expression -f for
