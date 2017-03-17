@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * <Fluorine Dog>
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -139,7 +139,7 @@ NOTES:
  *   Rating: 1
  */
 int bitAnd(int x, int y) {
-  return 2;
+  return ~(~x|~y);
 }
 /* 
  * getByte - Extract byte n from word x
@@ -150,14 +150,8 @@ int bitAnd(int x, int y) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-
-
-
-
-
-
-
-  return 2;
+  int ans = (x>>(n<<3)) & 0xFF;
+  return ans;
 
 }
 /* 
@@ -169,7 +163,10 @@ int getByte(int x, int n) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+  int flag = (1<<31) & x;
+  int x1 = x >> n;
+  int mask = (flag >> n) << 1;
+  return x1 ^ mask;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -179,7 +176,37 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  return 2;
+  // 0x FFFF FFFF
+  int k,s,t,f;
+  int sign = 0x1 << 31;
+  int top = x & sign;
+
+  f = x^top; 
+
+  k = 0xAA | 0xAA << 8;
+  s = k | k<<16;
+  t = (f&s);
+  f = (f^t) + (t>>1);
+
+  k = 0xCC | 0xCC << 8;
+  s = k | k<<16;
+  t = (f&s);
+  f = (f^t) + (t>>2);
+
+  k = 0xF0 | 0xF0 << 8;
+  s = k | k<<16;
+  t = (f&s);
+  f = (f^t) + (t>>4);
+
+  k = 0xFF << 8;
+  s = k | k<<16;
+  t = (f&s);
+  f = (f^t) + (t>>8);
+
+  s = 1 << x ;
+  t = (f&s);
+  f = (f^t) + (t>>16);
+  return f;
 }
 /* 
  * bang - Compute !x without using !
