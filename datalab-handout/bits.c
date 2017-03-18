@@ -362,12 +362,9 @@ unsigned float_i2f(int x) {
   unsigned f,res,c=0, poi = 0;
   unsigned offset=127+23;
   if(x == 0) return 0;
-  if(x == 0x80000000) return 0xcf000000;
   if(x<0) x = -x; else sign = 0; 
   f = x;
   while(f <= frac){f=f<<1; offset = offset-1;}
-  // offset = offset -1;
-  // f = f + f -1;
   while(f+c >= 0x01000000){poi=c|poi;c=f&1;f=f>>1;offset=offset+1;}
   if(!poi) c = c & f;
   f = f+c;
