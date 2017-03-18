@@ -258,7 +258,7 @@ int fitsBits(int x, int n) {
  */
 int divpwr2(int x, int n) {
   int f,s;
-  f = ~x+1;
+  f = ~x+1; // special case handling: 0x80000000
   s = f >> 31;
   f = ((f+s) >> n) +(~s+1);
   return ~f+1;
@@ -339,7 +339,12 @@ int ilog2(int x) {
  *   Rating: 2
  */
 unsigned float_neg(unsigned uf) {
- return 2;
+  unsigned sign = 0x80000000U;
+  unsigned exp  = 0x7F800000U;
+  unsigned frac = 0x007FFFFFU;
+  unsigned NaN = ((uf&exp)==exp) && uf&frac;
+  if (NaN) return uf;
+  else return  uf ^ sign;
 }
 /* 
  * float_i2f - Return bit-level equivalent of expression (float) x
@@ -351,7 +356,23 @@ unsigned float_neg(unsigned uf) {
  *   Rating: 4
  */
 unsigned float_i2f(int x) {
-  return 2;
+  unsigned sign = 0x80000000U;
+  // unsigned exp  = 0x7F800000U;
+  unsigned frac = 0x007FFFFFU;
+  unsigned f,res,c=0, poi = 0;
+  unsigned offset=127+23;
+  if(x == 0) return 0;
+  if(x == 0x80000000) return 0xcf000000;
+  if(x<0) x = -x; else sign = 0; 
+  f = x;
+  while(f <= frac){f=f<<1; offset = offset-1;}
+  // offset = offset -1;
+  // f = f + f -1;
+  while(f+c >= 0x01000000){poi=c|poi;c=f&1;f=f>>1;offset=offset+1;}
+  if(!poi) c = c & f;
+  f = f+c;
+  res = sign | offset<<23 | (frac&f); 
+  return res;
 }
 /* 
  * float_twice - Return bit-level equivalent of expression 2*f for
@@ -365,5 +386,21 @@ unsigned float_i2f(int x) {
  *   Rating: 4
  */
 unsigned float_twice(unsigned uf) {
-  return 2;
+  unsigned sign = 0x80000000U;
+  unsigned exp  = 0x7F800000U;
+  unsigned frac = 0x007FFFFFU;
+  unsigned special = ((uf&exp)==exp);
+  // unsigned NaN = special && uf&frac;
+  unsigned xp;
+  if((uf&~sign) ==0) return uf;
+  if (special) return uf;
+  
+  xp = uf&exp;
+  if(!xp){
+    uf = (uf&~sign) + uf;    
+    return uf;
+  }
+  uf = uf + 0x00800000;
+  if(xp == exp) uf = uf & ~frac;
+  return uf;
 }
