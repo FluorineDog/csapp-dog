@@ -392,9 +392,8 @@ unsigned float_twice(unsigned uf) {
   unsigned special = ((uf&exp)==exp);
   // unsigned NaN = special && uf&frac;
   unsigned xp;
-  if((uf&~sign) ==0) return uf;
+
   if (special) return uf;
-  
   xp = uf&exp;
   if(!xp){
     uf = (uf&~sign) + uf;    
