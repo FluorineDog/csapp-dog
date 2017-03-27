@@ -178,10 +178,9 @@ int logicalShift(int x, int n) {
 int bitCount(int x) {
 
   int k,s,t,f;
-  int sign = 0x1 << 31;
-  int top = x & sign;
-
-  f = x^top; 
+  int sign = x >> 31;
+  
+  f = x^(sign << 31);
 
   k = 0xAA | 0xAA << 8;
   s = k | k<<16;
@@ -204,7 +203,7 @@ int bitCount(int x) {
   f = (f^t) + (t>>8);
 
   f = ((f >> 16) + f) & 0xFF;
-  return f + !!top;
+  return f + (sign&0x1);
 }
 /* 
  * bang - Compute !x without using !
