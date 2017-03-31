@@ -359,7 +359,7 @@ Disassembly of section .text:
     ;rdi->arg1->str from readline
   400efc:	55                   	push   %rbp                         ;callee-saved
   400efd:	53                   	push   %rbx                         ;
-  400efe:	48 83 ec 28          	sub    $0x28,%rsp                   ;allocate 5*8 space
+  400efe:	48 83 ec 28          	sub    $0x28,%rsp                   ;allocate 5*8 space = 3*8 + 2*8
   400f02:	48 89 e6             	mov    %rsp,%rsi                    ;rsi->arg2->rsp
   400f05:	e8 52 05 00 00       	callq  40145c <read_six_numbers>    ;
   400f0a:	83 3c 24 01          	cmpl   $0x1,(%rsp)                  ;arr[0] = 1
@@ -367,19 +367,20 @@ Disassembly of section .text:
   400f10:	e8 25 05 00 00       	callq  40143a <explode_bomb>        ;
   400f15:	eb 19                	jmp    400f30 <phase_2+0x34>
   ; 3 ==>
-  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax              ;eax = [rbx-4] = arr[0]
-  400f1a:	01 c0                	add    %eax,%eax                    ;eax = 2 arr[0]
-  400f1c:	39 03                	cmp    %eax,(%rbx)                  ;test 2arr[0] == arr[3] == 2
+  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax              ;eax = [rbx-4] = arr[0]     ;rbx[-1] => eax
+  400f1a:	01 c0                	add    %eax,%eax                    ;eax = 2 arr[0]             ; double
+  400f1c:	39 03                	cmp    %eax,(%rbx)                  ;test 2arr[0] == arr[1] == 2;
   400f1e:	74 05                	je     400f25 <phase_2+0x29>        ;
   400f20:	e8 15 05 00 00       	callq  40143a <explode_bomb>        
   400f25:	48 83 c3 04          	add    $0x4,%rbx                    ;rbx=rsp+8
   400f29:	48 39 eb             	cmp    %rbp,%rbx                    ;if rbx == rpx
-  400f2c:	75 e9                	jne    400f17 <phase_2+0x1b>
-  400f2e:	eb 0c                	jmp    400f3c <phase_2+0x40>
+  400f2c:	75 e9                	jne    400f17 <phase_2+0x1b>        
+  400f2e:	eb 0c                	jmp    400f3c <phase_2+0x40>        ;goto final
   ; 2 ==>
-  400f30:	48 8d 5c 24 04       	lea    0x4(%rsp),%rbx               ;rbx=rsp+4
-  400f35:	48 8d 6c 24 18       	lea    0x18(%rsp),%rbp              ;rbp=rsp+3*8 =arr[3]
+  400f30:	48 8d 5c 24 04       	lea    0x4(%rsp),%rbx               ;rbx = rsp+4   = &arr[1]    ; rbx++
+  400f35:	48 8d 6c 24 18       	lea    0x18(%rsp),%rbp              ;rbp = rsp+3*8 = &arr[6]    ; guard
   400f3a:	eb db                	jmp    400f17 <phase_2+0x1b>        
+  ; final ==>
   400f3c:	48 83 c4 28          	add    $0x28,%rsp                   ;done
   400f40:	5b                   	pop    %rbx                         ;recover
   400f41:	5d                   	pop    %rbp                         ;
@@ -563,7 +564,7 @@ Disassembly of section .text:
   401181:	eb 05                	jmp    401188 <phase_6+0x94>
   401183:	ba d0 32 60 00       	mov    $0x6032d0,%edx
   401188:	48 89 54 74 20       	mov    %rdx,0x20(%rsp,%rsi,2)
-  40118d:	48 83 c6 04          	add    $0x4,%rsi
+  40118d:	48 83 c6 04          	add    $0x4,%rsiq
   401191:	48 83 fe 18          	cmp    $0x18,%rsi
   401195:	74 14                	je     4011ab <phase_6+0xb7>
   401197:	8b 0c 34             	mov    (%rsp,%rsi,1),%ecx
