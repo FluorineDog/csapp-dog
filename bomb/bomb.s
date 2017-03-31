@@ -296,10 +296,12 @@ Disassembly of section .text:
   400e23:	e8 e8 fc ff ff       	callq  400b10 <puts@plt>
   400e28:	bf 78 23 40 00       	mov    $0x402378,%edi
   400e2d:	e8 de fc ff ff       	callq  400b10 <puts@plt>
+
   400e32:	e8 67 06 00 00       	callq  40149e <read_line>
   400e37:	48 89 c7             	mov    %rax,%rdi
   400e3a:	e8 a1 00 00 00       	callq  400ee0 <phase_1>
   400e3f:	e8 80 07 00 00       	callq  4015c4 <phase_defused>
+
   400e44:	bf a8 23 40 00       	mov    $0x4023a8,%edi
   400e49:	e8 c2 fc ff ff       	callq  400b10 <puts@plt>
   400e4e:	e8 4b 06 00 00       	callq  40149e <read_line>
@@ -354,30 +356,33 @@ Disassembly of section .text:
   400efb:	c3                   	retq   
 
 0000000000400efc <phase_2>:
-  400efc:	55                   	push   %rbp
-  400efd:	53                   	push   %rbx
-  400efe:	48 83 ec 28          	sub    $0x28,%rsp
-  400f02:	48 89 e6             	mov    %rsp,%rsi
-  400f05:	e8 52 05 00 00       	callq  40145c <read_six_numbers>
-  400f0a:	83 3c 24 01          	cmpl   $0x1,(%rsp)
-  400f0e:	74 20                	je     400f30 <phase_2+0x34>
-  400f10:	e8 25 05 00 00       	callq  40143a <explode_bomb>
+    ;rdi->arg1->str from readline
+  400efc:	55                   	push   %rbp                         ;callee-saved
+  400efd:	53                   	push   %rbx                         ;
+  400efe:	48 83 ec 28          	sub    $0x28,%rsp                   ;allocate 5*8 space
+  400f02:	48 89 e6             	mov    %rsp,%rsi                    ;rsi->arg2->rsp
+  400f05:	e8 52 05 00 00       	callq  40145c <read_six_numbers>    ;
+  400f0a:	83 3c 24 01          	cmpl   $0x1,(%rsp)                  ;arr[0] = 1
+  400f0e:	74 20                	je     400f30 <phase_2+0x34>        ;
+  400f10:	e8 25 05 00 00       	callq  40143a <explode_bomb>        ;
   400f15:	eb 19                	jmp    400f30 <phase_2+0x34>
-  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax
-  400f1a:	01 c0                	add    %eax,%eax
-  400f1c:	39 03                	cmp    %eax,(%rbx)
-  400f1e:	74 05                	je     400f25 <phase_2+0x29>
-  400f20:	e8 15 05 00 00       	callq  40143a <explode_bomb>
-  400f25:	48 83 c3 04          	add    $0x4,%rbx
-  400f29:	48 39 eb             	cmp    %rbp,%rbx
+  ; 3 ==>
+  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax              ;eax = [rbx-4] = arr[0]
+  400f1a:	01 c0                	add    %eax,%eax                    ;eax = 2 arr[0]
+  400f1c:	39 03                	cmp    %eax,(%rbx)                  ;test 2arr[0] == arr[3] == 2
+  400f1e:	74 05                	je     400f25 <phase_2+0x29>        ;
+  400f20:	e8 15 05 00 00       	callq  40143a <explode_bomb>        
+  400f25:	48 83 c3 04          	add    $0x4,%rbx                    ;rbx=rsp+8
+  400f29:	48 39 eb             	cmp    %rbp,%rbx                    ;if rbx == rpx
   400f2c:	75 e9                	jne    400f17 <phase_2+0x1b>
   400f2e:	eb 0c                	jmp    400f3c <phase_2+0x40>
-  400f30:	48 8d 5c 24 04       	lea    0x4(%rsp),%rbx
-  400f35:	48 8d 6c 24 18       	lea    0x18(%rsp),%rbp
-  400f3a:	eb db                	jmp    400f17 <phase_2+0x1b>
-  400f3c:	48 83 c4 28          	add    $0x28,%rsp
-  400f40:	5b                   	pop    %rbx
-  400f41:	5d                   	pop    %rbp
+  ; 2 ==>
+  400f30:	48 8d 5c 24 04       	lea    0x4(%rsp),%rbx               ;rbx=rsp+4
+  400f35:	48 8d 6c 24 18       	lea    0x18(%rsp),%rbp              ;rbp=rsp+3*8 =arr[3]
+  400f3a:	eb db                	jmp    400f17 <phase_2+0x1b>        
+  400f3c:	48 83 c4 28          	add    $0x28,%rsp                   ;done
+  400f40:	5b                   	pop    %rbx                         ;recover
+  400f41:	5d                   	pop    %rbp                         ;
   400f42:	c3                   	retq   
 
 0000000000400f43 <phase_3>:
@@ -803,22 +808,24 @@ Disassembly of section .text:
   401457:	e8 c4 f7 ff ff       	callq  400c20 <exit@plt>
 
 000000000040145c <read_six_numbers>:
+  ; x in rdi//stdin, y in rsi//array 
   40145c:	48 83 ec 18          	sub    $0x18,%rsp
-  401460:	48 89 f2             	mov    %rsi,%rdx
-  401463:	48 8d 4e 04          	lea    0x4(%rsi),%rcx
-  401467:	48 8d 46 14          	lea    0x14(%rsi),%rax
-  40146b:	48 89 44 24 08       	mov    %rax,0x8(%rsp)
-  401470:	48 8d 46 10          	lea    0x10(%rsi),%rax
-  401474:	48 89 04 24          	mov    %rax,(%rsp)
-  401478:	4c 8d 4e 0c          	lea    0xc(%rsi),%r9
-  40147c:	4c 8d 46 08          	lea    0x8(%rsi),%r8
-  401480:	be c3 25 40 00       	mov    $0x4025c3,%esi
-  401485:	b8 00 00 00 00       	mov    $0x0,%eax
-  40148a:	e8 61 f7 ff ff       	callq  400bf0 <__isoc99_sscanf@plt>
-  40148f:	83 f8 05             	cmp    $0x5,%eax
+  401460:	48 89 f2             	mov    %rsi,%rdx        ;rdx = y                ;2
+  401463:	48 8d 4e 04          	lea    0x4(%rsi),%rcx   ;rcx = y + 4            ;3
+  401467:	48 8d 46 14          	lea    0x14(%rsi),%rax  ;rax = y + 20   
+  40146b:	48 89 44 24 08       	mov    %rax,0x8(%rsp)   ;rsp[1] = rax = y+20    ;8
+  401470:	48 8d 46 10          	lea    0x10(%rsi),%rax  ;rax = y+16
+  401474:	48 89 04 24          	mov    %rax,(%rsp)      ;rsp[0] = rax = y+16    ;7
+  401478:	4c 8d 4e 0c          	lea    0xc(%rsi),%r9    ;r9 = y+12              ;6
+  40147c:	4c 8d 46 08          	lea    0x8(%rsi),%r8    ;r8 = y+8               ;5
+  401480:	be c3 25 40 00       	mov    $0x4025c3,%esi   ;"%d %d %d %d %d %d"    ;2
+  401485:	b8 00 00 00 00       	mov    $0x0,%eax        ;0->ret                 ;return
+                                                            ;x->rdi                 ;1
+  40148a:	e8 61 f7 ff ff       	callq  400bf0 <__isoc99_sscanf@plt> ;
+  40148f:	83 f8 05             	cmp    $0x5,%eax                                ;check if n>5
   401492:	7f 05                	jg     401499 <read_six_numbers+0x3d>
   401494:	e8 a1 ff ff ff       	callq  40143a <explode_bomb>
-  401499:	48 83 c4 18          	add    $0x18,%rsp
+  401499:	48 83 c4 18          	add    $0x18,%rsp                               ;free
   40149d:	c3                   	retq   
 
 000000000040149e <read_line>:

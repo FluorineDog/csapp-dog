@@ -1,0 +1,95 @@
+bomb:     238 /lib64/ld-linux-x86-64.so.2
+bomb:     633 __stack_chk_fail
+bomb:     657 __errno_location
+bomb:     6e7 __libc_start_main
+bomb:    22b6 %s: Error: Couldn't open %s
+
+bomb:    22d3 Usage: %s [<input_file>]
+
+bomb:    22ed That's number 2.  Keep going!
+bomb:    231a Good work!  On to the next...
+bomb:    2338 Welcome to my fiendish little bomb. You have 6 phases with
+bomb:    2378 which to blow yourself up. Have a nice day!
+bomb:    23a8 Phase 1 defused. How about the next one?
+bomb:    23d8 So you got that one.  Try this one.
+bomb:    2400 Border relations with Canada have never been better.
+bomb:    2438 Wow! You've defused the secret stage!
+bomb:    24b0 maduiersnfotvbylSo you think you can stop the bomb with ctrl-c, do you?
+bomb:    24f8 Curses, you've found the secret phase!
+bomb:    2520 But finding it and solving it are quite different...
+bomb:    2558 Congratulations! You've defused the bomb!
+bomb:    2592 Invalid phase%s
+
+bomb:    25ac The bomb has blown up.
+bomb:    25c3 %d %d %d %d %d %d
+bomb:    25d5 Error: Premature EOF on stdin
+bomb:    25fe Error: Input line too long
+bomb:    2629 greatwhite.ics.cs.cmu.edu
+bomb:    2643 angelshark.ics.cs.cmu.edu
+bomb:    265d makoshark.ics.cs.cmu.edu
+bomb:    2678 Program timed out after %d seconds
+
+bomb:    26a0 Error: HTTP request failed with error %d: %s
+bomb:    26d0 GET /%s/submitr.pl/?userid=%s&lab=%s&result=%s&submit=submit HTTP/1.0
+
+
+bomb:    2720 Error: Unable to connect to server %s
+bomb:    274f %s %d %[a-zA-z ]
+bomb:    2760 changeme.ics.cs.cmu.edu
+bomb:    2778 
+AUTORESULT_STRING=%s
+
+bomb:    3740 GCC: (Ubuntu 4.8.1-2ubuntu1~12.04) 4.8.1
+bomb:    3769 GCC: (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
+bomb:    41a0 /usr/include/x86_64-linux-gnu/bits
+bomb:    41c3 /usr/lib/gcc/x86_64-linux-gnu/4.8/include
+bomb:    4327 long long unsigned int
+bomb:    4348 /usr0/home/droh/ics3/im/labs/bomblab/src
+bomb:    4416 short unsigned int
+bomb:    4437 GNU C 4.8.1 -mtune=generic -march=x86-64 -ggdb -O1 -fstack-protector
+bomb:    4792 .note.gnu.build-id
+bomb:    6099 deregister_tm_clones
+bomb:    60ae register_tm_clones
+bomb:    60c1 __do_global_dtors_aux
+bomb:    60e6 __do_global_dtors_aux_fini_array_entry
+bomb:    6119 __frame_dummy_init_array_entry
+bomb:    619d __init_array_end
+bomb:    61b7 __init_array_start
+bomb:    61ca _GLOBAL_OFFSET_TABLE_
+bomb:    61f5 getenv@@GLIBC_2.2.5
+bomb:    621b __errno_location@@GLIBC_2.2.5
+bomb:    6239 _ITM_deregisterTMCloneTable
+bomb:    6255 stdout@@GLIBC_2.2.5
+bomb:    6282 strcpy@@GLIBC_2.2.5
+bomb:    629a puts@@GLIBC_2.2.5
+bomb:    62ac stdin@@GLIBC_2.2.5
+bomb:    62bf write@@GLIBC_2.2.5
+bomb:    62ef __stack_chk_fail@@GLIBC_2.4
+bomb:    630b num_input_strings
+bomb:    6325 initialize_bomb_solve
+bomb:    6378 alarm@@GLIBC_2.2.5
+bomb:    638b close@@GLIBC_2.2.5
+bomb:    63a4 read@@GLIBC_2.2.5
+bomb:    63b6 __libc_start_main@@GLIBC_2.2.5
+bomb:    63d5 fgets@@GLIBC_2.2.5
+bomb:    6408 signal@@GLIBC_2.2.5
+bomb:    641c gethostbyname@@GLIBC_2.2.5
+bomb:    643d __memmove_chk@@GLIBC_2.3.4
+bomb:    6458 __memcpy_chk@@GLIBC_2.3.4
+bomb:    6481 strtol@@GLIBC_2.2.5
+bomb:    64ec fflush@@GLIBC_2.2.5
+bomb:    6500 __isoc99_sscanf@@GLIBC_2.7
+bomb:    6571 __printf_chk@@GLIBC_2.3.4
+bomb:    65a5 strings_not_equal
+bomb:    65bf fopen@@GLIBC_2.2.5
+bomb:    65e2 _Jv_RegisterClasses
+bomb:    660a exit@@GLIBC_2.2.5
+bomb:    6624 connect@@GLIBC_2.2.5
+bomb:    6645 __fprintf_chk@@GLIBC_2.3.4
+bomb:    6660 _ITM_registerTMCloneTable
+bomb:    6686 sleep@@GLIBC_2.2.5
+bomb:    66a5 read_six_numbers
+bomb:    66ca __ctype_b_loc@@GLIBC_2.3
+bomb:    66e3 stderr@@GLIBC_2.2.5
+bomb:    66f7 __sprintf_chk@@GLIBC_2.3.4
+bomb:    6712 socket@@GLIBC_2.2.5
