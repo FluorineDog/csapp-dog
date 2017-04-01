@@ -427,29 +427,33 @@ Disassembly of section .text:
 
 0000000000400fce <func4>:
 
-  ; x in edi, y in esi, z in edx
-  400fce:	48 83 ec 08          	sub    $0x8,%rsp            ; alloc 8
-  400fd2:	89 d0                	mov    %edx,%eax            ;eax = z = 12
-  400fd4:	29 f0                	sub    %esi,%eax            ;eax = z-y = 12
-  400fd6:	89 c1                	mov    %eax,%ecx            ;ecx = z-y = 12
-  400fd8:	c1 e9 1f             	shr    $0x1f,%ecx           ;ecx = (z-y)>>31 = 0
-  400fdb:	01 c8                	add    %ecx,%eax            ;eax = (z-y) + ... = 12
-  400fdd:	d1 f8                	sar    %eax                 ;eax = 6
-  400fdf:	8d 0c 30             	lea    (%rax,%rsi,1),%ecx   ;ecx = eax + y = 6
-  400fe2:	39 f9                	cmp    %edi,%ecx            ;6 <= x jmp
+  ; x in edi, y===0 in esi, z in edx
+  400fce:	48 83 ec 08          	sub    $0x8,%rsp            ;alloc 8
+  400fd2:	89 d0                	mov    %edx,%eax            ;eax = z = 12 = z
+  400fd4:	29 f0                	sub    %esi,%eax            ;eax = z-y = 12 = z
+  400fd6:	89 c1                	mov    %eax,%ecx            ;ecx = z-y = 12 = z
+  400fd8:	c1 e9 1f             	shr    $0x1f,%ecx           ;ecx = (z-y)>>31 = 0 = z >> 31
+  400fdb:	01 c8                	add    %ecx,%eax            ;eax = (z-y) + ... = 12 = z+...
+  400fdd:	d1 f8                	sar    %eax                 ;eax = 6 = (z + ...) /2
+  400fdf:	8d 0c 30             	lea    (%rax,%rsi,1),%ecx   ;ecx = eax + y = 6 = (z + ...) /2
+
+  400fe2:	39 f9                	cmp    %edi,%ecx            ;if ecx <= x jmp ==> 2 // so ecx === x
   400fe4:	7e 0c                	jle    400ff2 <func4+0x24>  ;
-  400fe6:	8d 51 ff             	lea    -0x1(%rcx),%edx      ;--z until x < z/2
+
+  400fe6:	8d 51 ff             	lea    -0x1(%rcx),%edx      ;--z 
   400fe9:	e8 e0 ff ff ff       	callq  400fce <func4>
-  400fee:	01 c0                	add    %eax,%eax            ;z=12
-  400ff0:	eb 15                	jmp    401007 <func4+0x39>
+  400fee:	01 c0                	add    %eax,%eax            ; eax === 0
+  400ff0:	eb 15                	jmp    401007 <func4+0x39>  ; failed unless eax = 0
   ;2==>
-  400ff2:	b8 00 00 00 00       	mov    $0x0,%eax
-  400ff7:	39 f9                	cmp    %edi,%ecx
-  400ff9:	7d 0c                	jge    401007 <func4+0x39>
-  400ffb:	8d 71 01             	lea    0x1(%rcx),%esi
-  400ffe:	e8 cb ff ff ff       	callq  400fce <func4>
-  401003:	8d 44 00 01          	lea    0x1(%rax,%rax,1),%eax
-  401007:	48 83 c4 08          	add    $0x8,%rsp
+  400ff2:	b8 00 00 00 00       	mov    $0x0,%eax            ; eax = 0
+  400ff7:	39 f9                	cmp    %edi,%ecx            ; if x >= ecx goto succ else fail
+  400ff9:	7d 0c                	jge    401007 <func4+0x39>  ; 
+
+  400ffb:	8d 71 01             	lea    0x1(%rcx),%esi       ; fail
+  400ffe:	e8 cb ff ff ff       	callq  400fce <func4>       ; fail
+  401003:	8d 44 00 01          	lea    0x1(%rax,%rax,1),%eax ;x = 2x+1 and fail
+  ;final
+  401007:	48 83 c4 08          	add    $0x8,%rsp            ;return eax
   40100b:	c3                   	retq   
 
 000000000040100c <phase_4>:
@@ -471,13 +475,15 @@ Disassembly of section .text:
   401044:	8b 7c 24 08          	mov    0x8(%rsp),%edi   ;1=x
 
   401048:	e8 81 ff ff ff       	callq  400fce <func4>
+  40104d:	85 c0                	test   %eax,%eax            ; return value eax === 0
 
-  40104d:	85 c0                	test   %eax,%eax
   40104f:	75 07                	jne    401058 <phase_4+0x4c>
-  401051:	83 7c 24 0c 00       	cmpl   $0x0,0xc(%rsp)    ;y=0
+
+  401051:	83 7c 24 0c 00       	cmpl   $0x0,0xc(%rsp)       ; y===0
   401056:	74 05                	je     40105d <phase_4+0x51>
 
   401058:	e8 dd 03 00 00       	callq  40143a <explode_bomb>
+
   40105d:	48 83 c4 18          	add    $0x18,%rsp
   401061:	c3                   	retq   
 
@@ -486,40 +492,45 @@ Disassembly of section .text:
   401062:	53                   	push   %rbx
   401063:	48 83 ec 20          	sub    $0x20,%rsp         ; alloc 8*4
   401067:	48 89 fb             	mov    %rdi,%rbx          ; rbx = string
-  40106a:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax      ;
-  401071:	00 00 
-  401073:	48 89 44 24 18       	mov    %rax,0x18(%rsp)          ; protecting at rsp[3]
-  401078:	31 c0                	xor    %eax,%eax                ; eax = 0  
-  40107a:	e8 9c 02 00 00       	callq  40131b <string_length>   ; len rdi(str)
-  40107f:	83 f8 06             	cmp    $0x6,%eax  ; test        ; 6 == length
 
-  401082:	74 4e                	je     4010d2 <phase_5+0x70>
-  401084:	e8 b1 03 00 00       	callq  40143a <explode_bomb>
-  401089:	eb 47                	jmp    4010d2 <phase_5+0x70>    ;
+  40106a:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax            ; protecting at rsp[3]
+  401071:	00 00                                                 ;
+  401073:	48 89 44 24 18       	mov    %rax,0x18(%rsp)          ; 
+
+  401078:	31 c0                	xor    %eax,%eax                ; eax = 0  
+
+  40107a:	e8 9c 02 00 00       	callq  40131b <string_length>   ; len rdi::string
+  40107f:	83 f8 06             	cmp    $0x6,%eax                ; 6 === length
+  401082:	74 4e                	je     4010d2 <phase_5+0x70>    ;
+  401084:	e8 b1 03 00 00       	callq  40143a <explode_bomb>    ;
+  401089:	eb 47                	jmp    4010d2 <phase_5+0x70>    ; ==> 2
   ; 3 ==>
   40108b:	0f b6 0c 03          	movzbl (%rbx,%rax,1),%ecx       ; cl = ecx = rbx[eax]
   40108f:	88 0c 24             	mov    %cl,(%rsp)               ; rsp[0] = cl = rbx[eax]
-  401092:	48 8b 14 24          	mov    (%rsp),%rdx              ; rdx = cl
-  401096:	83 e2 0f             	and    $0xf,%edx                ; extract one byte
+  401092:	48 8b 14 24          	mov    (%rsp),%rdx              ; rdx = cl = rbx[eax]
+  401096:	83 e2 0f             	and    $0xf,%edx                ; ascii -> int for dl
                                     ;maduiersnfotvbyl
+                                    ;0123456789abcdef
                                     ;0123456789012345 -> hcstr
-  401099:	0f b6 92 b0 24 40 00 	movzbl 0x4024b0(%rdx),%edx      ; hcstr[ex]->dl
-  4010a0:	88 54 04 10          	mov    %dl,0x10(%rsp,%rax,1)    ; 
+  401099:	0f b6 92 b0 24 40 00 	movzbl 0x4024b0(%rdx),%edx      ; dl = hcstr[rdx]
+  4010a0:	88 54 04 10          	mov    %dl,0x10(%rsp,%rax,1)    ; rsp[0x10+rax] = dl
   4010a4:	48 83 c0 01          	add    $0x1,%rax
   4010a8:	48 83 f8 06          	cmp    $0x6,%rax                ;
   4010ac:	75 dd                	jne    40108b <phase_5+0x29>
-  4010ae:	c6 44 24 16 00       	movb   $0x0,0x16(%rsp)
-  4010b3:	be 5e 24 40 00       	mov    $0x40245e,%esi
-  4010b8:	48 8d 7c 24 10       	lea    0x10(%rsp),%rdi
-  4010bd:	e8 76 02 00 00       	callq  401338 <strings_not_equal>
+  4010ae:	c6 44 24 16 00       	movb   $0x0,0x16(%rsp)          
+                                                                ; 9on567
+                                                                ; 9fe567
+  4010b3:	be 5e 24 40 00       	mov    $0x40245e,%esi           ; flyers
+  4010b8:	48 8d 7c 24 10       	lea    0x10(%rsp),%rdi            ; rdi = 
+  4010bd:	e8 76 02 00 00       	callq  401338 <strings_not_equal> ; if equal done
   4010c2:	85 c0                	test   %eax,%eax
-  4010c4:	74 13                	je     4010d9 <phase_5+0x77>
+  4010c4:	74 13                	je     4010d9 <phase_5+0x77>    
   4010c6:	e8 6f 03 00 00       	callq  40143a <explode_bomb>
   4010cb:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
   4010d0:	eb 07                	jmp    4010d9 <phase_5+0x77>
   ; 2 ==>  
   4010d2:	b8 00 00 00 00       	mov    $0x0,%eax                ; eax = 0
-  4010d7:	eb b2                	jmp    40108b <phase_5+0x29>    ; 
+  4010d7:	eb b2                	jmp    40108b <phase_5+0x29>    ; ==> 3
 
   4010d9:	48 8b 44 24 18       	mov    0x18(%rsp),%rax          ; canary checking
   4010de:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax            ; 
@@ -722,19 +733,22 @@ Disassembly of section .text:
   401337:	c3                   	retq   
 
 0000000000401338 <strings_not_equal>:
+  ; x in rdi/rbx, y in rsi/rbp 
   401338:	41 54                	push   %r12
   40133a:	55                   	push   %rbp
   40133b:	53                   	push   %rbx
-  40133c:	48 89 fb             	mov    %rdi,%rbx
-  40133f:	48 89 f5             	mov    %rsi,%rbp
-  401342:	e8 d4 ff ff ff       	callq  40131b <string_length>
-  401347:	41 89 c4             	mov    %eax,%r12d
-  40134a:	48 89 ef             	mov    %rbp,%rdi
+  40133c:	48 89 fb             	mov    %rdi,%rbx                ;rbx = x
+  40133f:	48 89 f5             	mov    %rsi,%rbp                ;rbp = y
+
+  401342:	e8 d4 ff ff ff       	callq  40131b <string_length>   ;test rdi
+  401347:	41 89 c4             	mov    %eax,%r12                ;r12 = len x
+  40134a:	48 89 ef             	mov    %rbp,%rdi                ;rdi = x
   40134d:	e8 c9 ff ff ff       	callq  40131b <string_length>
-  401352:	ba 01 00 00 00       	mov    $0x1,%edx
-  401357:	41 39 c4             	cmp    %eax,%r12d
-  40135a:	75 3f                	jne    40139b <strings_not_equal+0x63>
-  40135c:	0f b6 03             	movzbl (%rbx),%eax
+  401352:	ba 01 00 00 00       	mov    $0x1,%edx                ;1 to edx/result
+  401357:	41 39 c4             	cmp    %eax,%r12d               ;
+  40135a:	75 3f                	jne    40139b <strings_not_equal+0x63>   ; size checker
+
+  40135c:	0f b6 03             	movzbl (%rbx),%eax    
   40135f:	84 c0                	test   %al,%al
   401361:	74 25                	je     401388 <strings_not_equal+0x50>
   401363:	3a 45 00             	cmp    0x0(%rbp),%al
@@ -750,11 +764,14 @@ Disassembly of section .text:
   40137f:	75 e9                	jne    40136a <strings_not_equal+0x32>
   401381:	ba 00 00 00 00       	mov    $0x0,%edx
   401386:	eb 13                	jmp    40139b <strings_not_equal+0x63>
+    ;succ
   401388:	ba 00 00 00 00       	mov    $0x0,%edx
-  40138d:	eb 0c                	jmp    40139b <strings_not_equal+0x63>
+  40138d:	eb 0c                	jmp    40139b <strings_not_equal+0x63>  ; equal
+    ;fail
   40138f:	ba 01 00 00 00       	mov    $0x1,%edx
   401394:	eb 05                	jmp    40139b <strings_not_equal+0x63>
   401396:	ba 01 00 00 00       	mov    $0x1,%edx
+  ;end
   40139b:	89 d0                	mov    %edx,%eax
   40139d:	5b                   	pop    %rbx
   40139e:	5d                   	pop    %rbp
@@ -932,6 +949,7 @@ Disassembly of section .text:
   401602:	75 31                	jne    401635 <phase_defused+0x71>
   401604:	be 22 26 40 00       	mov    $0x402622,%esi
   401609:	48 8d 7c 24 10       	lea    0x10(%rsp),%rdi
+
   40160e:	e8 25 fd ff ff       	callq  401338 <strings_not_equal>
   401613:	85 c0                	test   %eax,%eax
   401615:	75 1e                	jne    401635 <phase_defused+0x71>
@@ -943,8 +961,9 @@ Disassembly of section .text:
   401630:	e8 0d fc ff ff       	callq  401242 <secret_phase>
   401635:	bf 58 25 40 00       	mov    $0x402558,%edi
   40163a:	e8 d1 f4 ff ff       	callq  400b10 <puts@plt>
+
   40163f:	48 8b 44 24 68       	mov    0x68(%rsp),%rax 
-  401644:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax ; what the hell is that ???
+  401644:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax              ; canary protection 
   40164b:	00 00 
   40164d:	74 05                	je     401654 <phase_defused+0x90>
   40164f:	e8 dc f4 ff ff       	callq  400b30 <__stack_chk_fail@plt>
