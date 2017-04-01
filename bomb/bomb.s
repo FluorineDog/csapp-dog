@@ -546,33 +546,46 @@ Disassembly of section .text:
   4010f6:	41 55                	push   %r13
   4010f8:	41 54                	push   %r12
   4010fa:	55                   	push   %rbp
-  4010fb:	53                   	push   %rbx
-  4010fc:	48 83 ec 50          	sub    $0x50,%rsp
-  401100:	49 89 e5             	mov    %rsp,%r13
-  401103:	48 89 e6             	mov    %rsp,%rsi
-  401106:	e8 51 03 00 00       	callq  40145c <read_six_numbers>
-  40110b:	49 89 e6             	mov    %rsp,%r14
-  40110e:	41 bc 00 00 00 00    	mov    $0x0,%r12d
-  401114:	4c 89 ed             	mov    %r13,%rbp
-  401117:	41 8b 45 00          	mov    0x0(%r13),%eax
-  40111b:	83 e8 01             	sub    $0x1,%eax
-  40111e:	83 f8 05             	cmp    $0x5,%eax
-  401121:	76 05                	jbe    401128 <phase_6+0x34>
-  401123:	e8 12 03 00 00       	callq  40143a <explode_bomb>
-  401128:	41 83 c4 01          	add    $0x1,%r12d
-  40112c:	41 83 fc 06          	cmp    $0x6,%r12d
-  401130:	74 21                	je     401153 <phase_6+0x5f>
-  401132:	44 89 e3             	mov    %r12d,%ebx
-  401135:	48 63 c3             	movslq %ebx,%rax
-  401138:	8b 04 84             	mov    (%rsp,%rax,4),%eax
-  40113b:	39 45 00             	cmp    %eax,0x0(%rbp)
-  40113e:	75 05                	jne    401145 <phase_6+0x51>
-  401140:	e8 f5 02 00 00       	callq  40143a <explode_bomb>
-  401145:	83 c3 01             	add    $0x1,%ebx
+  4010fb:	53                   	push   %rbx                         ; protected
+
+  4010fc:	48 83 ec 50          	sub    $0x50,%rsp                   ; allloc 10*8 = 20*4
+
+  401100:	49 89 e5             	mov    %rsp,%r13                    ; r13 = rsp
+  401103:	48 89 e6             	mov    %rsp,%rsi                    ; read ==> rsi  
+  401106:	e8 51 03 00 00       	callq  40145c <read_six_numbers>    ; from [0, 6*4)
+
+  40110b:	49 89 e6             	mov    %rsp,%r14                    ; r14 = rsp
+  40110e:	41 bc 00 00 00 00    	mov    $0x0,%r12d                   ; r12 = 0
+    ;@loopOUT2==>
+  401114:	4c 89 ed             	mov    %r13,%rbp                    ; rbp = r13
+  401117:	41 8b 45 00          	mov    0x0(%r13),%eax               ; eax = r13[0]
+  40111b:	83 e8 01             	sub    $0x1,%eax                    ; eax--
+
+  40111e:	83 f8 05             	cmp    $0x5,%eax                    ; ENSURE eax <= 5
+  401121:	76 05                	jbe    401128 <phase_6+0x34>        ; or 1 <=*r13 <= 6
+  401123:	e8 12 03 00 00       	callq  40143a <explode_bomb>        ;
+
+  401128:	41 83 c4 01          	add    $0x1,%r12d                   ; r12++
+  40112c:	41 83 fc 06          	cmp    $0x6,%r12d                   ; r12<6 , otherwise ==> @2
+  401130:	74 21                	je     401153 <phase_6+0x5f>        ;
+
+  401132:	44 89 e3             	mov    %r12d,%ebx                   ; ebx = r12  
+    ;@loop2 ==>
+  401135:	48 63 c3             	movslq %ebx,%rax                    ; 
+  401138:	8b 04 84             	mov    (%rsp,%rax,4),%eax           ; eax = rsp[ebx] 
+  40113b:	39 45 00             	cmp    %eax,0x0(%rbp)               ; ENSURE eax != rbp[0]
+  40113e:	75 05                	jne    401145 <phase_6+0x51>        ;
+  401140:	e8 f5 02 00 00       	callq  40143a <explode_bomb>        ;
+
+  401145:	83 c3 01             	add    $0x1,%ebx                    ; 
   401148:	83 fb 05             	cmp    $0x5,%ebx
-  40114b:	7e e8                	jle    401135 <phase_6+0x41>
+  40114b:	7e e8                	jle    401135 <phase_6+0x41>        ;==>loop2
   40114d:	49 83 c5 04          	add    $0x4,%r13
-  401151:	eb c1                	jmp    401114 <phase_6+0x20>
+  401151:	eb c1                	jmp    401114 <phase_6+0x20>        ;==>loopOUT2
+
+    ;conclusion ENSURE set{rsp[0,6]} = set{1,2,3,4,5,6,} without order
+
+    ;@2==>
   401153:	48 8d 74 24 18       	lea    0x18(%rsp),%rsi
   401158:	4c 89 f0             	mov    %r14,%rax
   40115b:	b9 07 00 00 00       	mov    $0x7,%ecx
@@ -623,6 +636,7 @@ Disassembly of section .text:
   4011f2:	83 ed 01             	sub    $0x1,%ebp
   4011f5:	75 e8                	jne    4011df <phase_6+0xeb>
   4011f7:	48 83 c4 50          	add    $0x50,%rsp
+
   4011fb:	5b                   	pop    %rbx
   4011fc:	5d                   	pop    %rbp
   4011fd:	41 5c                	pop    %r12
