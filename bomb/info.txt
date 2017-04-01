@@ -34,7 +34,8 @@ bomb:    26d0 GET /%s/submitr.pl/?userid=%s&lab=%s&result=%s&submit=submit HTTP/
 
 
 bomb:    2720 Error: Unable to connect to server %s
-bomb:    274f %s %d %[a-zA-z ]
+bomb:  400f75:	ff 24 c5 70 24 40 00 	jmpq   *0x402470(,%rax,8)
+    274f %s %d %[a-zA-z ]
 bomb:    2760 changeme.ics.cs.cmu.edu
 bomb:    2778 
 AUTORESULT_STRING=%s

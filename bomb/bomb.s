@@ -399,7 +399,6 @@ Disassembly of section .text:
   400f6a:	83 7c 24 08 07       	cmpl   $0x7,0x8(%rsp)
   400f6f:	77 3c                	ja     400fad <phase_3+0x6a>
   400f71:	8b 44 24 08          	mov    0x8(%rsp),%eax
-  400f75:	ff 24 c5 70 24 40 00 	jmpq   *0x402470(,%rax,8)
   400f7c:	b8 cf 00 00 00       	mov    $0xcf,%eax
   400f81:	eb 3b                	jmp    400fbe <phase_3+0x7b>
   400f83:	b8 c3 02 00 00       	mov    $0x2c3,%eax
@@ -425,20 +424,23 @@ Disassembly of section .text:
   400fcd:	c3                   	retq   
 
 0000000000400fce <func4>:
-  400fce:	48 83 ec 08          	sub    $0x8,%rsp
-  400fd2:	89 d0                	mov    %edx,%eax
-  400fd4:	29 f0                	sub    %esi,%eax
-  400fd6:	89 c1                	mov    %eax,%ecx
-  400fd8:	c1 e9 1f             	shr    $0x1f,%ecx
-  400fdb:	01 c8                	add    %ecx,%eax
-  400fdd:	d1 f8                	sar    %eax
-  400fdf:	8d 0c 30             	lea    (%rax,%rsi,1),%ecx
-  400fe2:	39 f9                	cmp    %edi,%ecx
-  400fe4:	7e 0c                	jle    400ff2 <func4+0x24>
-  400fe6:	8d 51 ff             	lea    -0x1(%rcx),%edx
+
+  ; x in edi, y in esi, z in edx
+  400fce:	48 83 ec 08          	sub    $0x8,%rsp            ; alloc 8
+  400fd2:	89 d0                	mov    %edx,%eax            ;eax = z = 12
+  400fd4:	29 f0                	sub    %esi,%eax            ;eax = z-y = 12
+  400fd6:	89 c1                	mov    %eax,%ecx            ;ecx = z-y = 12
+  400fd8:	c1 e9 1f             	shr    $0x1f,%ecx           ;ecx = (z-y)>>31 = 0
+  400fdb:	01 c8                	add    %ecx,%eax            ;eax = (z-y) + ... = 12
+  400fdd:	d1 f8                	sar    %eax                 ;eax = 6
+  400fdf:	8d 0c 30             	lea    (%rax,%rsi,1),%ecx   ;ecx = eax + y = 6
+  400fe2:	39 f9                	cmp    %edi,%ecx            ;6 <= x jmp
+  400fe4:	7e 0c                	jle    400ff2 <func4+0x24>  ;
+  400fe6:	8d 51 ff             	lea    -0x1(%rcx),%edx      ;--z until x < z/2
   400fe9:	e8 e0 ff ff ff       	callq  400fce <func4>
-  400fee:	01 c0                	add    %eax,%eax
+  400fee:	01 c0                	add    %eax,%eax            ;z=12
   400ff0:	eb 15                	jmp    401007 <func4+0x39>
+  ;2==>
   400ff2:	b8 00 00 00 00       	mov    $0x0,%eax
   400ff7:	39 f9                	cmp    %edi,%ecx
   400ff9:	7d 0c                	jge    401007 <func4+0x39>
@@ -450,24 +452,29 @@ Disassembly of section .text:
 
 000000000040100c <phase_4>:
   40100c:	48 83 ec 18          	sub    $0x18,%rsp
-  401010:	48 8d 4c 24 0c       	lea    0xc(%rsp),%rcx
-  401015:	48 8d 54 24 08       	lea    0x8(%rsp),%rdx
+  401010:	48 8d 4c 24 0c       	lea    0xc(%rsp),%rcx   ;4=y
+  401015:	48 8d 54 24 08       	lea    0x8(%rsp),%rdx   ;3=x
   40101a:	be cf 25 40 00       	mov    $0x4025cf,%esi
   40101f:	b8 00 00 00 00       	mov    $0x0,%eax
   401024:	e8 c7 fb ff ff       	callq  400bf0 <__isoc99_sscanf@plt>
   401029:	83 f8 02             	cmp    $0x2,%eax
   40102c:	75 07                	jne    401035 <phase_4+0x29>
-  40102e:	83 7c 24 08 0e       	cmpl   $0xe,0x8(%rsp)
+  40102e:	83 7c 24 08 0e       	cmpl   $0xe,0x8(%rsp)   ;!!test x <= 0xe = 12
+
   401033:	76 05                	jbe    40103a <phase_4+0x2e>
   401035:	e8 00 04 00 00       	callq  40143a <explode_bomb>
-  40103a:	ba 0e 00 00 00       	mov    $0xe,%edx
-  40103f:	be 00 00 00 00       	mov    $0x0,%esi
-  401044:	8b 7c 24 08          	mov    0x8(%rsp),%edi
+
+  40103a:	ba 0e 00 00 00       	mov    $0xe,%edx        ;3=12
+  40103f:	be 00 00 00 00       	mov    $0x0,%esi        ;2=0
+  401044:	8b 7c 24 08          	mov    0x8(%rsp),%edi   ;1=x
+
   401048:	e8 81 ff ff ff       	callq  400fce <func4>
+
   40104d:	85 c0                	test   %eax,%eax
   40104f:	75 07                	jne    401058 <phase_4+0x4c>
-  401051:	83 7c 24 0c 00       	cmpl   $0x0,0xc(%rsp)
+  401051:	83 7c 24 0c 00       	cmpl   $0x0,0xc(%rsp)    ;y=0
   401056:	74 05                	je     40105d <phase_4+0x51>
+
   401058:	e8 dd 03 00 00       	callq  40143a <explode_bomb>
   40105d:	48 83 c4 18          	add    $0x18,%rsp
   401061:	c3                   	retq   
