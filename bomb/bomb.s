@@ -603,14 +603,14 @@ Disassembly of section .text:
   40116f:	be 00 00 00 00       	mov    $0x0,%esi                    ; esi = 0
   401174:	eb 21                	jmp    401197 <phase_6+0xa3>        ; ==>@3
 
-  401176:	48 8b 52 08          	mov    0x8(%rdx),%rdx
+  401176:	48 8b 52 08          	mov    0x8(%rdx),%rdx               ; asdf
   40117a:	83 c0 01             	add    $0x1,%eax
   40117d:	39 c8                	cmp    %ecx,%eax
   40117f:	75 f5                	jne    401176 <phase_6+0x82>
   401181:	eb 05                	jmp    401188 <phase_6+0x94>
     ;@4 ==>
   401183:	ba d0 32 60 00       	mov    $0x6032d0,%edx
-  401188:	48 89 54 74 20       	mov    %rdx,0x20(%rsp,%rs,2)        ;rsp_20 []
+  401188:	48 89 54 74 20       	mov    %rdx,0x20(%rsp,%rsi,2)        ;rsp_20 []
   40118d:	48 83 c6 04          	add    $0x4,%rsiq
   401191:	48 83 fe 18          	cmp    $0x18,%rsi
   401195:	74 14                	je     4011ab <phase_6+0xb7>
