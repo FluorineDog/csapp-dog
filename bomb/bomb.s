@@ -500,13 +500,13 @@ Disassembly of section .text:
   40108b:	0f b6 0c 03          	movzbl (%rbx,%rax,1),%ecx       ; cl = ecx = rbx[eax]
   40108f:	88 0c 24             	mov    %cl,(%rsp)               ; rsp[0] = cl = rbx[eax]
   401092:	48 8b 14 24          	mov    (%rsp),%rdx              ; rdx = cl
-  401096:	83 e2 0f             	and    $0xf,%edx                ; 
+  401096:	83 e2 0f             	and    $0xf,%edx                ; extract one byte
                                     ;maduiersnfotvbyl
-                                    ;0123456789012345
-  401099:	0f b6 92 b0 24 40 00 	movzbl 0x4024b0(%rdx),%edx      ;
-  4010a0:	88 54 04 10          	mov    %dl,0x10(%rsp,%rax,1)
+                                    ;0123456789012345 -> hcstr
+  401099:	0f b6 92 b0 24 40 00 	movzbl 0x4024b0(%rdx),%edx      ; hcstr[ex]->dl
+  4010a0:	88 54 04 10          	mov    %dl,0x10(%rsp,%rax,1)    ; 
   4010a4:	48 83 c0 01          	add    $0x1,%rax
-  4010a8:	48 83 f8 06          	cmp    $0x6,%rax
+  4010a8:	48 83 f8 06          	cmp    $0x6,%rax                ;
   4010ac:	75 dd                	jne    40108b <phase_5+0x29>
   4010ae:	c6 44 24 16 00       	movb   $0x0,0x16(%rsp)
   4010b3:	be 5e 24 40 00       	mov    $0x40245e,%esi
