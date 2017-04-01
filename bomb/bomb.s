@@ -548,7 +548,7 @@ Disassembly of section .text:
   4010fa:	55                   	push   %rbp
   4010fb:	53                   	push   %rbx                         ; protected
 
-  4010fc:	48 83 ec 50          	sub    $0x50,%rsp                   ; allloc 10*8 = 20*4
+  4010fc:	48 83 ec 50          	sub    $0x50,%rsp                   ; allocate 10*8 =  6*4 + 8 + 6*8 o
 
   401100:	49 89 e5             	mov    %rsp,%r13                    ; r13 = rsp
   401103:	48 89 e6             	mov    %rsp,%rsi                    ; read ==> rsi  
@@ -586,33 +586,43 @@ Disassembly of section .text:
     ;conclusion ENSURE set{rsp[0,6]} = set{1,2,3,4,5,6,} without order
 
     ;@2==>
-  401153:	48 8d 74 24 18       	lea    0x18(%rsp),%rsi
-  401158:	4c 89 f0             	mov    %r14,%rax
-  40115b:	b9 07 00 00 00       	mov    $0x7,%ecx
-  401160:	89 ca                	mov    %ecx,%edx
-  401162:	2b 10                	sub    (%rax),%edx
-  401164:	89 10                	mov    %edx,(%rax)
-  401166:	48 83 c0 04          	add    $0x4,%rax
-  40116a:	48 39 f0             	cmp    %rsi,%rax
-  40116d:	75 f1                	jne    401160 <phase_6+0x6c>
-  40116f:	be 00 00 00 00       	mov    $0x0,%esi
-  401174:	eb 21                	jmp    401197 <phase_6+0xa3>
+  401153:	48 8d 74 24 18       	lea    0x18(%rsp),%rsi              ; rsi = rsp + 4*6
+  401158:	4c 89 f0             	mov    %r14,%rax                    ; rax = rsp
+  40115b:	b9 07 00 00 00       	mov    $0x7,%ecx                    ; ecx = 7
+
+
+  401160:	89 ca                	mov    %ecx,%edx                    ; edx = ecx
+  401162:	2b 10                	sub    (%rax),%edx                  ; *rax = 7-*rax
+  401164:	89 10                	mov    %edx,(%rax)                  ;  
+  401166:	48 83 c0 04          	add    $0x4,%rax                    ;
+
+  40116a:	48 39 f0             	cmp    %rsi,%rax                    ; 
+  40116d:	75 f1                	jne    401160 <phase_6+0x6c>        ; for all 6 elements
+
+
+  40116f:	be 00 00 00 00       	mov    $0x0,%esi                    ; esi = 0
+  401174:	eb 21                	jmp    401197 <phase_6+0xa3>        ; ==>@3
+
   401176:	48 8b 52 08          	mov    0x8(%rdx),%rdx
   40117a:	83 c0 01             	add    $0x1,%eax
   40117d:	39 c8                	cmp    %ecx,%eax
   40117f:	75 f5                	jne    401176 <phase_6+0x82>
   401181:	eb 05                	jmp    401188 <phase_6+0x94>
+    ;@4 ==>
   401183:	ba d0 32 60 00       	mov    $0x6032d0,%edx
-  401188:	48 89 54 74 20       	mov    %rdx,0x20(%rsp,%rsi,2)
+  401188:	48 89 54 74 20       	mov    %rdx,0x20(%rsp,%rs,2)        ;rsp_20 []
   40118d:	48 83 c6 04          	add    $0x4,%rsiq
   401191:	48 83 fe 18          	cmp    $0x18,%rsi
   401195:	74 14                	je     4011ab <phase_6+0xb7>
-  401197:	8b 0c 34             	mov    (%rsp,%rsi,1),%ecx
-  40119a:	83 f9 01             	cmp    $0x1,%ecx
-  40119d:	7e e4                	jle    401183 <phase_6+0x8f>
+    ;@3 ==>
+  401197:	8b 0c 34             	mov    (%rsp,%rsi,1),%ecx           ; ecx = rsp[rsi]
+  40119a:	83 f9 01             	cmp    $0x1,%ecx                    ; if ecx == 1
+  40119d:	7e e4                	jle    401183 <phase_6+0x8f>        ; ==>@4
+
   40119f:	b8 01 00 00 00       	mov    $0x1,%eax
   4011a4:	ba d0 32 60 00       	mov    $0x6032d0,%edx
   4011a9:	eb cb                	jmp    401176 <phase_6+0x82>
+
   4011ab:	48 8b 5c 24 20       	mov    0x20(%rsp),%rbx
   4011b0:	48 8d 44 24 28       	lea    0x28(%rsp),%rax
   4011b5:	48 8d 74 24 50       	lea    0x50(%rsp),%rsi
@@ -627,6 +637,8 @@ Disassembly of section .text:
   4011d2:	48 c7 42 08 00 00 00 	movq   $0x0,0x8(%rdx)
   4011d9:	00 
   4011da:	bd 05 00 00 00       	mov    $0x5,%ebp
+
+
   4011df:	48 8b 43 08          	mov    0x8(%rbx),%rax
   4011e3:	8b 00                	mov    (%rax),%eax
   4011e5:	39 03                	cmp    %eax,(%rbx)
