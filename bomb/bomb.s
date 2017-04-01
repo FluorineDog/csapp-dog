@@ -320,11 +320,13 @@ Disassembly of section .text:
   400e8b:	48 89 c7             	mov    %rax,%rdi
   400e8e:	e8 79 01 00 00       	callq  40100c <phase_4>
   400e93:	e8 2c 07 00 00       	callq  4015c4 <phase_defused>
+
   400e98:	bf d8 23 40 00       	mov    $0x4023d8,%edi
   400e9d:	e8 6e fc ff ff       	callq  400b10 <puts@plt>
   400ea2:	e8 f7 05 00 00       	callq  40149e <read_line>
   400ea7:	48 89 c7             	mov    %rax,%rdi
   400eaa:	e8 b3 01 00 00       	callq  401062 <phase_5>
+  
   400eaf:	e8 10 07 00 00       	callq  4015c4 <phase_defused>
   400eb4:	bf 1a 23 40 00       	mov    $0x40231a,%edi
   400eb9:	e8 52 fc ff ff       	callq  400b10 <puts@plt>
@@ -480,23 +482,28 @@ Disassembly of section .text:
   401061:	c3                   	retq   
 
 0000000000401062 <phase_5>:
+  ; string in rdi
   401062:	53                   	push   %rbx
-  401063:	48 83 ec 20          	sub    $0x20,%rsp
-  401067:	48 89 fb             	mov    %rdi,%rbx
-  40106a:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+  401063:	48 83 ec 20          	sub    $0x20,%rsp         ; alloc 8*4
+  401067:	48 89 fb             	mov    %rdi,%rbx          ; rbx = string
+  40106a:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax      ;
   401071:	00 00 
-  401073:	48 89 44 24 18       	mov    %rax,0x18(%rsp)
-  401078:	31 c0                	xor    %eax,%eax
-  40107a:	e8 9c 02 00 00       	callq  40131b <string_length>
-  40107f:	83 f8 06             	cmp    $0x6,%eax
+  401073:	48 89 44 24 18       	mov    %rax,0x18(%rsp)          ; protecting at rsp[3]
+  401078:	31 c0                	xor    %eax,%eax                ; eax = 0  
+  40107a:	e8 9c 02 00 00       	callq  40131b <string_length>   ; len rdi(str)
+  40107f:	83 f8 06             	cmp    $0x6,%eax  ; test        ; 6 == length
+
   401082:	74 4e                	je     4010d2 <phase_5+0x70>
   401084:	e8 b1 03 00 00       	callq  40143a <explode_bomb>
-  401089:	eb 47                	jmp    4010d2 <phase_5+0x70>
-  40108b:	0f b6 0c 03          	movzbl (%rbx,%rax,1),%ecx
-  40108f:	88 0c 24             	mov    %cl,(%rsp)
-  401092:	48 8b 14 24          	mov    (%rsp),%rdx
-  401096:	83 e2 0f             	and    $0xf,%edx
-  401099:	0f b6 92 b0 24 40 00 	movzbl 0x4024b0(%rdx),%edx
+  401089:	eb 47                	jmp    4010d2 <phase_5+0x70>    ;
+  ; 3 ==>
+  40108b:	0f b6 0c 03          	movzbl (%rbx,%rax,1),%ecx       ; cl = ecx = rbx[eax]
+  40108f:	88 0c 24             	mov    %cl,(%rsp)               ; rsp[0] = cl = rbx[eax]
+  401092:	48 8b 14 24          	mov    (%rsp),%rdx              ; rdx = cl
+  401096:	83 e2 0f             	and    $0xf,%edx                ; 
+                                    ;maduiersnfotvbyl
+                                    ;0123456789012345
+  401099:	0f b6 92 b0 24 40 00 	movzbl 0x4024b0(%rdx),%edx      ;
   4010a0:	88 54 04 10          	mov    %dl,0x10(%rsp,%rax,1)
   4010a4:	48 83 c0 01          	add    $0x1,%rax
   4010a8:	48 83 f8 06          	cmp    $0x6,%rax
@@ -510,10 +517,12 @@ Disassembly of section .text:
   4010c6:	e8 6f 03 00 00       	callq  40143a <explode_bomb>
   4010cb:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
   4010d0:	eb 07                	jmp    4010d9 <phase_5+0x77>
-  4010d2:	b8 00 00 00 00       	mov    $0x0,%eax
-  4010d7:	eb b2                	jmp    40108b <phase_5+0x29>
-  4010d9:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
-  4010de:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax
+  ; 2 ==>  
+  4010d2:	b8 00 00 00 00       	mov    $0x0,%eax                ; eax = 0
+  4010d7:	eb b2                	jmp    40108b <phase_5+0x29>    ; 
+
+  4010d9:	48 8b 44 24 18       	mov    0x18(%rsp),%rax          ; canary checking
+  4010de:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax            ; 
   4010e5:	00 00 
   4010e7:	74 05                	je     4010ee <phase_5+0x8c>
   4010e9:	e8 42 fa ff ff       	callq  400b30 <__stack_chk_fail@plt>
@@ -909,7 +918,7 @@ Disassembly of section .text:
   4015c4:	48 83 ec 78          	sub    $0x78,%rsp
   4015c8:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
   4015cf:	00 00 
-  4015d1:	48 89 44 24 68       	mov    %rax,0x68(%rsp)
+  4015d1:	48 89 44 24 68       	mov    %rax,0x68(%rsp)            ; protecting at rsp[13]
   4015d6:	31 c0                	xor    %eax,%eax
   4015d8:	83 3d 81 21 20 00 06 	cmpl   $0x6,0x202181(%rip)        # 603760 <num_input_strings>
   4015df:	75 5e                	jne    40163f <phase_defused+0x7b>
@@ -934,8 +943,8 @@ Disassembly of section .text:
   401630:	e8 0d fc ff ff       	callq  401242 <secret_phase>
   401635:	bf 58 25 40 00       	mov    $0x402558,%edi
   40163a:	e8 d1 f4 ff ff       	callq  400b10 <puts@plt>
-  40163f:	48 8b 44 24 68       	mov    0x68(%rsp),%rax
-  401644:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax
+  40163f:	48 8b 44 24 68       	mov    0x68(%rsp),%rax 
+  401644:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax ; what the hell is that ???
   40164b:	00 00 
   40164d:	74 05                	je     401654 <phase_defused+0x90>
   40164f:	e8 dc f4 ff ff       	callq  400b30 <__stack_chk_fail@plt>
@@ -1064,7 +1073,7 @@ Disassembly of section .text:
   4017c8:	48 89 4c 24 18       	mov    %rcx,0x18(%rsp)
   4017cd:	4d 89 c7             	mov    %r8,%r15
   4017d0:	4c 89 cb             	mov    %r9,%rbx
-  4017d3:	4c 8b b4 24 a0 a0 00 	mov    0xa0a0(%rsp),%r14
+  4017d3:	4c 8b b4 24 a0 a0 00 	mov    0xa0a0(%rsp),%r14    
   4017da:	00 
   4017db:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
   4017e2:	00 00 
