@@ -685,45 +685,52 @@ Disassembly of section .text:
   401203:	c3                   	retq   
 
 0000000000401204 <fun7>:
-  401204:	48 83 ec 08          	sub    $0x8,%rsp
-  401208:	48 85 ff             	test   %rdi,%rdi
-  40120b:	74 2b                	je     401238 <fun7+0x34>
-  40120d:	8b 17                	mov    (%rdi),%edx
-  40120f:	39 f2                	cmp    %esi,%edx
-  401211:	7e 0d                	jle    401220 <fun7+0x1c>
-  401213:	48 8b 7f 08          	mov    0x8(%rdi),%rdi
-  401217:	e8 e8 ff ff ff       	callq  401204 <fun7>
-  40121c:	01 c0                	add    %eax,%eax
-  40121e:	eb 1d                	jmp    40123d <fun7+0x39>
-  401220:	b8 00 00 00 00       	mov    $0x0,%eax
-  401225:	39 f2                	cmp    %esi,%edx
-  401227:	74 14                	je     40123d <fun7+0x39>
-  401229:	48 8b 7f 10          	mov    0x10(%rdi),%rdi
-  40122d:	e8 d2 ff ff ff       	callq  401204 <fun7>
-  401232:	8d 44 00 01          	lea    0x1(%rax,%rax,1),%eax
-  401236:	eb 05                	jmp    40123d <fun7+0x39>
+  ; node in rdi, target in esi
+  401204:	48 83 ec 08          	sub    $0x8,%rsp  
+
+  401208:	48 85 ff             	test   %rdi,%rdi            ; if leaf return -1
+  40120b:	74 2b                	je     401238 <fun7+0x34>   ;
+  40120d:	8b 17                	mov    (%rdi),%edx          ; edx = rdi->x
+  40120f:	39 f2                	cmp    %esi,%edx            ; 
+  401211:	7e 0d                	jle    401220 <fun7+0x1c>   ; edx <= target ==> @1
+                                                            ; if less 
+  401213:	48 8b 7f 08          	mov    0x8(%rdi),%rdi       ; 
+  401217:	e8 e8 ff ff ff       	callq  401204 <fun7>        ; calc rdi->left
+  40121c:	01 c0                	add    %eax,%eax            ; 
+  40121e:	eb 1d                	jmp    40123d <fun7+0x39>   ; return 2x
+    ; @1
+  401220:	b8 00 00 00 00       	mov    $0x0,%eax            ; eax = 0
+  401225:	39 f2                	cmp    %esi,%edx            ; if equal return 0
+  401227:	74 14                	je     40123d <fun7+0x39>   ;
+                                                            ; if greater
+  401229:	48 8b 7f 10          	mov    0x10(%rdi),%rdi      ; calc fun7 rdi->right
+  40122d:	e8 d2 ff ff ff       	callq  401204 <fun7>          ;
+  401232:	8d 44 00 01          	lea    0x1(%rax,%rax,1),%eax  ; return 2x+1
+  401236:	eb 05                	jmp    40123d <fun7+0x39>     ;
+
   401238:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+
   40123d:	48 83 c4 08          	add    $0x8,%rsp
   401241:	c3                   	retq   
 
 0000000000401242 <secret_phase>:
   401242:	53                   	push   %rbx
   401243:	e8 56 02 00 00       	callq  40149e <read_line>
-  401248:	ba 0a 00 00 00       	mov    $0xa,%edx
-  40124d:	be 00 00 00 00       	mov    $0x0,%esi
-  401252:	48 89 c7             	mov    %rax,%rdi
+  401248:	ba 0a 00 00 00       	mov    $0xa,%edx  ; base 10
+  40124d:	be 00 00 00 00       	mov    $0x0,%esi  ; no ENDPTR
+  401252:	48 89 c7             	mov    %rax,%rdi  ; string
   401255:	e8 76 f9 ff ff       	callq  400bd0 <strtol@plt>
-  40125a:	48 89 c3             	mov    %rax,%rbx
-  40125d:	8d 40 ff             	lea    -0x1(%rax),%eax
-  401260:	3d e8 03 00 00       	cmp    $0x3e8,%eax
+  40125a:	48 89 c3             	mov    %rax,%rbx        ; store long to rbx
+  40125d:	8d 40 ff             	lea    -0x1(%rax),%eax  ; eax--
+  401260:	3d e8 03 00 00       	cmp    $0x3e8,%eax      ; 0 <= eax <= 0x3e8 = 1000
   401265:	76 05                	jbe    40126c <secret_phase+0x2a>
   401267:	e8 ce 01 00 00       	callq  40143a <explode_bomb>
-  40126c:	89 de                	mov    %ebx,%esi
-  40126e:	bf f0 30 60 00       	mov    $0x6030f0,%edi
-  401273:	e8 8c ff ff ff       	callq  401204 <fun7>
-  401278:	83 f8 02             	cmp    $0x2,%eax
-  40127b:	74 05                	je     401282 <secret_phase+0x40>
-  40127d:	e8 b8 01 00 00       	callq  40143a <explode_bomb>
+  40126c:	89 de                	mov    %ebx,%esi        ; long in arg2
+  40126e:	bf f0 30 60 00       	mov    $0x6030f0,%edi   ; secret_buf in edi
+  401273:	e8 8c ff ff ff       	callq  401204 <fun7>                ; ENSURE fun7 = 2
+  401278:	83 f8 02             	cmp    $0x2,%eax                    ; 
+  40127b:	74 05                	je     401282 <secret_phase+0x40>   ;
+  40127d:	e8 b8 01 00 00       	callq  40143a <explode_bomb>        ;
   401282:	bf 38 24 40 00       	mov    $0x402438,%edi
   401287:	e8 84 f8 ff ff       	callq  400b10 <puts@plt>
   40128c:	e8 33 03 00 00       	callq  4015c4 <phase_defused>
@@ -869,9 +876,9 @@ Disassembly of section .text:
 00000000004013f9 <skip>:
   4013f9:	53                   	push   %rbx
   4013fa:	48 63 05 5f 23 20 00 	movslq 0x20235f(%rip),%rax        # 603760 <num_input_strings>
-  401401:	48 8d 3c 80          	lea    (%rax,%rax,4),%rdi
-  401405:	48 c1 e7 04          	shl    $0x4,%rdi
-  401409:	48 81 c7 80 37 60 00 	add    $0x603780,%rdi
+  401401:	48 8d 3c 80          	lea    (%rax,%rax,4),%rdi         ; rdi = 5*16*rax = 80
+  401405:	48 c1 e7 04          	shl    $0x4,%rdi                  ; key to the secret_phase
+  401409:	48 81 c7 80 37 60 00 	add    $0x603780,%rdi             
   401410:	48 8b 15 51 23 20 00 	mov    0x202351(%rip),%rdx        # 603768 <infile>
   401417:	be 50 00 00 00       	mov    $0x50,%esi
   40141c:	e8 5f f7 ff ff       	callq  400b80 <fgets@plt>
