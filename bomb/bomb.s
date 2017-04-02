@@ -935,6 +935,7 @@ Disassembly of section .text:
   4014e2:	74 0a                	je     4014ee <read_line+0x50>
   4014e4:	bf 00 00 00 00       	mov    $0x0,%edi
   4014e9:	e8 32 f7 ff ff       	callq  400c20 <exit@plt>
+
   4014ee:	48 8b 05 53 22 20 00 	mov    0x202253(%rip),%rax        # 603748 <stdin@@GLIBC_2.2.5>
   4014f5:	48 89 05 6c 22 20 00 	mov    %rax,0x20226c(%rip)        # 603768 <infile>
   4014fc:	b8 00 00 00 00       	mov    $0x0,%eax
@@ -996,7 +997,7 @@ Disassembly of section .text:
   4015e1:	4c 8d 44 24 10       	lea    0x10(%rsp),%r8
   4015e6:	48 8d 4c 24 0c       	lea    0xc(%rsp),%rcx
   4015eb:	48 8d 54 24 08       	lea    0x8(%rsp),%rdx
-  4015f0:	be 19 26 40 00       	mov    $0x402619,%esi
+  4015f0:	be 19 26 40 00       	mov    $0x402619,%esi   ; %d %d %s
   4015f5:	bf 70 38 60 00       	mov    $0x603870,%edi
   4015fa:	e8 f1 f5 ff ff       	callq  400bf0 <__isoc99_sscanf@plt>
   4015ff:	83 f8 03             	cmp    $0x3,%eax
