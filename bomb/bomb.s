@@ -401,6 +401,7 @@ Disassembly of section .text:
   400f6a:	83 7c 24 08 07       	cmpl   $0x7,0x8(%rsp)
   400f6f:	77 3c                	ja     400fad <phase_3+0x6a>
   400f71:	8b 44 24 08          	mov    0x8(%rsp),%eax
+  400f75:   ff 24 c5 70 24 40 00    jmpq   *0x402470(,%rax,8)
   400f7c:	b8 cf 00 00 00       	mov    $0xcf,%eax
   400f81:	eb 3b                	jmp    400fbe <phase_3+0x7b>
   400f83:	b8 c3 02 00 00       	mov    $0x2c3,%eax
