@@ -585,6 +585,9 @@ Disassembly of section .text:
 
     ;conclusion ENSURE set{rsp[0,6]} = set{1,2,3,4,5,6,} without order
 
+
+    ; 4->3->2->1->6->5 beginning at rsp_20[0] 
+    ; 3->4->5->6->1->2->nil beginning at rsp_20[0] 
     ;@2==>
   401153:	48 8d 74 24 18       	lea    0x18(%rsp),%rsi              ; rsi = rsp + 4*6
   401158:	4c 89 f0             	mov    %r14,%rax                    ; rax = rsp
@@ -601,19 +604,20 @@ Disassembly of section .text:
 
 
 
+    ; 3->4->5->6->1->2->nil beginning at rsp_20[0] 
 
 
 
 
 
-  40116f:	be 00 00 00 00       	mov    $0x0,%esi                    ; esi = 0
+  40116f:	be 00 00 00 00       	mov    $0x0,%esi                    ; rsi = 0
   401174:	eb 21                	jmp    401197 <phase_6+0xa3>        ; ==>@3
     ;@5
   401176:	48 8b 52 08          	mov    0x8(%rdx),%rdx               ; rdx=rdx->next      
   40117a:	83 c0 01             	add    $0x1,%eax                    ; eax++                    
-  40117d:	39 c8                	cmp    %ecx,%eax                    ; if eax != ecx goto @5
-  40117f:	75 f5                	jne    401176 <phase_6+0x82>
-  401181:	eb 05                	jmp    401188 <phase_6+0x94>        ; ==>@4
+  40117d:	39 c8                	cmp    %ecx,%eax                    ; if eax != ecx ==> @5
+  40117f:	75 f5                	jne    401176 <phase_6+0x82>        ;
+  401181:	eb 05                	jmp    401188 <phase_6+0x94>        ; else          ==>@4
     ;@4'' ==>
   401183:	ba d0 32 60 00       	mov    $0x6032d0,%edx               ; rdx = bufSix
     ;@4   ==>
@@ -632,11 +636,12 @@ Disassembly of section .text:
   4011a9:	eb cb                	jmp    401176 <phase_6+0x82>        ; ==>@5
 
     ;summary: 
-    ;   @5 set rdx to some value according to rsp[rsi]
-    ;   @4 store rdx to rsp[rsi] 
+    ;   @5 set rdx to list address according to rsp[rsi]
+    ;   @4 store rdx to rsp_20[rsi] 
     ;   do it for 6 times
 
 
+    ; 3->4->5->6->1->2->nil beginning at rsp_20[0] 
     ;next
   4011ab:	48 8b 5c 24 20       	mov    0x20(%rsp),%rbx      ; rbx = rsp_20[0]
 
@@ -645,8 +650,8 @@ Disassembly of section .text:
   4011ba:	48 89 d9             	mov    %rbx,%rcx            ; rcx = rsp_20[0]
                                                                     ; for       init
                                                                     ; 
-  4011bd:	48 8b 10             	mov    (%rax),%rdx          ; rdx = rax->x
-  4011c0:	48 89 51 08          	mov    %rdx,0x8(%rcx)       ; rcx->next = rdx
+  4011bd:	48 8b 10             	mov    (%rax),%rdx          ; 
+  4011c0:	48 89 51 08          	mov    %rdx,0x8(%rcx)       ; rcx->next = *rax
   4011c4:	48 83 c0 08          	add    $0x8,%rax            ; rax++
   4011c8:	48 39 f0             	cmp    %rsi,%rax                ;  
   4011cb:	74 05                	je     4011d2 <phase_6+0xde>    ; testing   rsi != rax
@@ -655,19 +660,22 @@ Disassembly of section .text:
   4011d2:	48 c7 42 08 00 00 00 	movq   $0x0,0x8(%rdx)       ; rdx->next = 0
   4011d9:	00 
 
-    ;   
+    ; 2->3->4->5->0->1->nil or self loops
+    ; 3->4->5->6->1->2->nil beginning at rsp_20[0] 
   4011da:	bd 05 00 00 00       	mov    $0x5,%ebp            ; ebp = 5
-
+    ; @final_loop
   4011df:	48 8b 43 08          	mov    0x8(%rbx),%rax       ; rax = rbx->next
+
   4011e3:	8b 00                	mov    (%rax),%eax          ;
   4011e5:	39 03                	cmp    %eax,(%rbx)          ; ENSURE rbx->x1 >= rax->x1
-  4011e7:	7d 05                	jge    4011ee <phase_6+0xfa>
-  4011e9:	e8 4c 02 00 00       	callq  40143a <explode_bomb>
+  4011e7:	7d 05                	jge    4011ee <phase_6+0xfa>;
+  4011e9:	e8 4c 02 00 00       	callq  40143a <explode_bomb>;
+
   4011ee:	48 8b 5b 08          	mov    0x8(%rbx),%rbx       ; rbx = rbx -> next
   4011f2:	83 ed 01             	sub    $0x1,%ebp            ; ebp--
-  4011f5:	75 e8                	jne    4011df <phase_6+0xeb>; compare it for 5 times
-  4011f7:	48 83 c4 50          	add    $0x50,%rsp           ; done
+  4011f5:	75 e8                	jne    4011df <phase_6+0xeb>; compare it for 5 times ==>@final_loop
 
+  4011f7:	48 83 c4 50          	add    $0x50,%rsp           ; done
   4011fb:	5b                   	pop    %rbx
   4011fc:	5d                   	pop    %rbp
   4011fd:	41 5c                	pop    %r12
