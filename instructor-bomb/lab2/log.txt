@@ -1,0 +1,2 @@
+localhost.localdomain|Wed Apr 12 01:29:18 2017|210|nju-ics-2014a|1:defused:1:We have to stand with our North Korean allies.
+localhost.localdomain|Wed Apr 12 01:34:59 2017|210|nju-ics-2014a|1:exploded:1:asdfsa

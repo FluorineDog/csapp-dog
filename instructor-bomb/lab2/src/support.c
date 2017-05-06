@@ -139,6 +139,7 @@ void initialize_bomb(void)
     }
 
     /* Make sure it's in the list of legal machines */
+	valid_host = 1;
     for (i = 0; host_table[i]; i++) {
 	if (strcasecmp(host_table[i], hostname) == 0) {
 	    valid_host = 1;
@@ -264,10 +265,12 @@ void send_msg(int defused)
 
 void explode_bomb(void)
 {
+#ifdef NOTIFY
+    send_msg(0);
+#endif
     printf("\nBOOM!!!\n");
     printf("The bomb has blown up.\n");
 #ifdef NOTIFY
-    send_msg(0);
     printf("Your instructor has been notified.\n");
 #endif
 
