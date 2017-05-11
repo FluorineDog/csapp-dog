@@ -1,2 +1,2 @@
-mov $0x5561dcb0, %edi
+mov $0x59b997fa, %edi
 ret
