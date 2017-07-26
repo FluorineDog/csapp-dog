@@ -10,13 +10,13 @@
  * Please fill in the following team struct 
  */
 team_t team = {
-    "bovik",              /* Team name */
+	"bovik",              /* Team name */
 
-    "Harry Q. Bovik",     /* First member full name */
-    "bovik@nowhere.edu",  /* First member email address */
+	"Harry Q. Bovik",     /* First member full name */
+	"bovik@nowhere.edu",  /* First member email address */
 
-    "",                   /* Second member full name (leave blank if none) */
-    ""                    /* Second member email addr (leave blank if none) */
+	"",                   /* Second member full name (leave blank if none) */
+	""                    /* Second member email addr (leave blank if none) */
 };
 
 /***************
@@ -33,11 +33,11 @@ team_t team = {
 char naive_rotate_descr[] = "naive_rotate: Naive baseline implementation";
 void naive_rotate(int dim, pixel *src, pixel *dst) 
 {
-    int i, j;
+	int i, j;
 
-    for (i = 0; i < dim; i++)
+	for (i = 0; i < dim; i++)
 	for (j = 0; j < dim; j++)
-	    dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
+		dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
 }
 
 /* 
@@ -47,7 +47,17 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
 char rotate_descr[] = "rotate: Current working version";
 void rotate(int dim, pixel *src, pixel *dst) 
 {
-    naive_rotate(dim, src, dst);
+	int i, j;
+	for (i = 0; i < dim; i += 4){
+		for (j = 0; j < dim; j+= 4) {
+			for(int Ni = i; Ni < i+4; ++Ni){
+				for(int Nj = j; Nj < j+4; ++Nj){
+					// dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
+					dst[RIDX(dim-1-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
+				}
+			}
+		}
+	}
 }
 
 /*********************************************************************
@@ -60,9 +70,9 @@ void rotate(int dim, pixel *src, pixel *dst)
 
 void register_rotate_functions() 
 {
-    add_rotate_function(&naive_rotate, naive_rotate_descr);   
-    add_rotate_function(&rotate, rotate_descr);   
-    /* ... Register additional test functions here */
+	add_rotate_function(&naive_rotate, naive_rotate_descr);   
+	add_rotate_function(&rotate, rotate_descr);   
+	/* ... Register additional test functions here */
 }
 
 
@@ -77,10 +87,10 @@ void register_rotate_functions()
 
 /* A struct used to compute averaged pixel value */
 typedef struct {
-    int red;
-    int green;
-    int blue;
-    int num;
+	int red;
+	int green;
+	int blue;
+	int num;
 } pixel_sum;
 
 /* Compute min and max of two integers, respectively */
@@ -92,9 +102,9 @@ static int max(int a, int b) { return (a > b ? a : b); }
  */
 static void initialize_pixel_sum(pixel_sum *sum) 
 {
-    sum->red = sum->green = sum->blue = 0;
-    sum->num = 0;
-    return;
+	sum->red = sum->green = sum->blue = 0;
+	sum->num = 0;
+	return;
 }
 
 /* 
@@ -103,11 +113,11 @@ static void initialize_pixel_sum(pixel_sum *sum)
  */
 static void accumulate_sum(pixel_sum *sum, pixel p) 
 {
-    sum->red += (int) p.red;
-    sum->green += (int) p.green;
-    sum->blue += (int) p.blue;
-    sum->num++;
-    return;
+	sum->red += (int) p.red;
+	sum->green += (int) p.green;
+	sum->blue += (int) p.blue;
+	sum->num++;
+	return;
 }
 
 /* 
@@ -115,10 +125,10 @@ static void accumulate_sum(pixel_sum *sum, pixel p)
  */
 static void assign_sum_to_pixel(pixel *current_pixel, pixel_sum sum) 
 {
-    current_pixel->red = (unsigned short) (sum.red/sum.num);
-    current_pixel->green = (unsigned short) (sum.green/sum.num);
-    current_pixel->blue = (unsigned short) (sum.blue/sum.num);
-    return;
+	current_pixel->red = (unsigned short) (sum.red/sum.num);
+	current_pixel->green = (unsigned short) (sum.green/sum.num);
+	current_pixel->blue = (unsigned short) (sum.blue/sum.num);
+	return;
 }
 
 /* 
@@ -126,17 +136,17 @@ static void assign_sum_to_pixel(pixel *current_pixel, pixel_sum sum)
  */
 static pixel avg(int dim, int i, int j, pixel *src) 
 {
-    int ii, jj;
-    pixel_sum sum;
-    pixel current_pixel;
+	int ii, jj;
+	pixel_sum sum;
+	pixel current_pixel;
 
-    initialize_pixel_sum(&sum);
-    for(ii = max(i-1, 0); ii <= min(i+1, dim-1); ii++) 
+	initialize_pixel_sum(&sum);
+	for(ii = max(i-1, 0); ii <= min(i+1, dim-1); ii++) 
 	for(jj = max(j-1, 0); jj <= min(j+1, dim-1); jj++) 
-	    accumulate_sum(&sum, src[RIDX(ii, jj, dim)]);
+		accumulate_sum(&sum, src[RIDX(ii, jj, dim)]);
 
-    assign_sum_to_pixel(&current_pixel, sum);
-    return current_pixel;
+	assign_sum_to_pixel(&current_pixel, sum);
+	return current_pixel;
 }
 
 /******************************************************
@@ -149,11 +159,11 @@ static pixel avg(int dim, int i, int j, pixel *src)
 char naive_smooth_descr[] = "naive_smooth: Naive baseline implementation";
 void naive_smooth(int dim, pixel *src, pixel *dst) 
 {
-    int i, j;
+	int i, j;
 
-    for (i = 0; i < dim; i++)
+	for (i = 0; i < dim; i++)
 	for (j = 0; j < dim; j++)
-	    dst[RIDX(i, j, dim)] = avg(dim, i, j, src);
+		dst[RIDX(i, j, dim)] = avg(dim, i, j, src);
 }
 
 /*
@@ -162,8 +172,12 @@ void naive_smooth(int dim, pixel *src, pixel *dst)
  */
 char smooth_descr[] = "smooth: Current working version";
 void smooth(int dim, pixel *src, pixel *dst) 
-{
-    naive_smooth(dim, src, dst);
+{	
+	int i, j;
+
+	for (i = 0; i < dim; i++)
+	for (j = 0; j < dim; j++)
+		dst[RIDX(i, j, dim)] = avg(dim, i, j, src);
 }
 
 
@@ -176,8 +190,8 @@ void smooth(int dim, pixel *src, pixel *dst)
  *********************************************************************/
 
 void register_smooth_functions() {
-    add_smooth_function(&smooth, smooth_descr);
-    add_smooth_function(&naive_smooth, naive_smooth_descr);
-    /* ... Register additional test functions here */
+	add_smooth_function(&smooth, smooth_descr);
+	add_smooth_function(&naive_smooth, naive_smooth_descr);
+	/* ... Register additional test functions here */
 }
 
