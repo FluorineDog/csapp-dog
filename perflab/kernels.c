@@ -44,29 +44,11 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
  * rotate - Your current working version of rotate
  * IMPORTANT: This is the version you will be graded on
  */
-static const int STRIP_I = 16;
-static const int STRIP_J = 16;
+
+static const int STRIP_I = 32;
+static const int STRIP_J = 32;
 static char rotate_old_descr[] = "rotate_old: past working version";
 void rotate_old(int dim, pixel *src, pixel *dst) 
-{
-	int i, j;
-	int dimnn = dim - 1;
-	
-	for (i = 0; i < dim; i += STRIP_I){
-		for (j = 0; j < dim; j+= STRIP_J) {
-			int stop_i = i + STRIP_I;
-			for(int Ni = i; Ni < stop_i; ++Ni){
-				int stop_j = j + STRIP_J;
-				for(int Nj = j; Nj < stop_j; ++Nj){
-					dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
-				}
-			}
-		}
-	}
-}
-
-static char rotate_descr[] = "rotate: Current working version";
-void rotate(int dim, pixel *src, pixel *dst) 
 {
 	int i, j;
 	int dimnn = dim - 1;
@@ -86,6 +68,23 @@ void rotate(int dim, pixel *src, pixel *dst)
 	}
 }
 
+static char rotate_descr[] = "rotate: Current working version";
+void rotate(int dim, pixel *src, pixel *dst) 
+{
+	int Ni, j;
+	int dimnn = dim - 1;
+	
+	for (j = 0; j < dim; j+= STRIP_J) {
+		for (Ni = 0; Ni < dim; Ni++ ){
+			int stop_j = j + STRIP_J;
+			int loc = dimnn - Ni;
+			for(int Nj = j; Nj < stop_j; ++Nj){
+				// dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
+				dst[RIDX(Ni, Nj, dim)] = src[RIDX(Nj, loc, dim)];
+			}
+		}
+	}
+}
 /*********************************************************************
  * register_rotate_functions - Register all of your different versions
  *     of the rotate kernel with the driver by calling the
