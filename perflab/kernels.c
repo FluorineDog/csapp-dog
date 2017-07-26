@@ -10,13 +10,13 @@
  * Please fill in the following team struct 
  */
 team_t team = {
-	"bovik",              /* Team name */
+	"dog",              /* Team name */
 
-	"Harry Q. Bovik",     /* First member full name */
-	"bovik@nowhere.edu",  /* First member email address */
+	"fluorinedog",     /* First member full name */
+	"fluorinedog@gmail.com",  /* First member email address */
 
-	"",                   /* Second member full name (leave blank if none) */
-	""                    /* Second member email addr (leave blank if none) */
+	"guilingou",                   /* Second member full name (leave blank if none) */
+	"guilingou@hustunique.com"                    /* Second member email addr (leave blank if none) */
 };
 
 /***************
@@ -44,16 +44,27 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
  * rotate - Your current working version of rotate
  * IMPORTANT: This is the version you will be graded on
  */
+static const int STRIP_I = 16;
+static const int STRIP_J = 16;
 char rotate_descr[] = "rotate: Current working version";
 void rotate(int dim, pixel *src, pixel *dst) 
 {
 	int i, j;
-	for (i = 0; i < dim; i += 4){
-		for (j = 0; j < dim; j+= 4) {
-			for(int Ni = i; Ni < i+4; ++Ni){
-				for(int Nj = j; Nj < j+4; ++Nj){
+	int dimnn = dim - 1;
+	
+	for (i = 0; i < dim; i += STRIP_I){
+		for (j = 0; j < dim; j+= STRIP_J) {
+			int stop_i = i + STRIP_I;
+			for(int Ni = i; Ni < stop_i; ++Ni){
+				int stop_j = j + STRIP_J;
+				for(int Nj = j; Nj < stop_j; ++Nj){
+					// for(int Nj = j; Nj < j+4; ++Nj){
 					// dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
-					dst[RIDX(dim-1-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
+					// dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
+					// dst[RIDX(dimnn-Nj1, Ni, dim)] = src[RIDX(Ni, Nj1, dim)];
+					// dst[RIDX(dimnn-Nj2, Ni, dim)] = src[RIDX(Ni, Nj2, dim)];
+					// dst[RIDX(dimnn-Nj3, Ni, dim)] = src[RIDX(Ni, Nj3, dim)];
+					dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
 				}
 			}
 		}
@@ -190,8 +201,8 @@ void smooth(int dim, pixel *src, pixel *dst)
  *********************************************************************/
 
 void register_smooth_functions() {
-	add_smooth_function(&smooth, smooth_descr);
-	add_smooth_function(&naive_smooth, naive_smooth_descr);
+	// add_smooth_function(&smooth, smooth_descr);
+	// add_smooth_function(&naive_smooth, naive_smooth_descr);
 	/* ... Register additional test functions here */
 }
 
