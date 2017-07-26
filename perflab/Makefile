@@ -1,13 +1,13 @@
 # Student's Makefile for the CS:APP Performance Lab
-TEAM = bovik
+TEAM = dog
 VERSION = 1
-HANDINDIR = 
+HANDINDIR = build
 
 CC = gcc
-CFLAGS = -Wall -O2 -m32
+CFLAGS = -Wall -O2 -std=c11
 LIBS = -lm
 
-OBJS = driver.o kernels.o fcyc.o clock.o
+OBJS = clock.o kernels.o fcyc.o driver.o
 
 all: driver
 

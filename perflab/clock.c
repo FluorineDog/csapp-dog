@@ -80,7 +80,7 @@ double get_counter()
 }
 #endif /* Alpha */
 
-#if IS_x86
+// #if IS_x86
 /* $begin x86cyclecounter */
 /* Initialize the cycle counter */
 static unsigned cyc_hi = 0;
@@ -91,7 +91,7 @@ static unsigned cyc_lo = 0;
    Implementation requires assembly code to use the rdtsc instruction. */
 void access_counter(unsigned *hi, unsigned *lo)
 {
-    asm("rdtsc; movl %%edx,%0; movl %%eax,%1"   /* Read cycle counter */
+    __asm("rdtsc; movl %%edx,%0; movl %%eax,%1"   /* Read cycle counter */
 	: "=r" (*hi), "=r" (*lo)                /* and move results to */
 	: /* No input */                        /* the two outputs */
 	: "%edx", "%eax");
@@ -124,7 +124,7 @@ double get_counter()
     return result;
 }
 /* $end x86cyclecounter */
-#endif /* x86 */
+// #endif /* x86 */
 
 double ovhd()
 {
