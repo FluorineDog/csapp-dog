@@ -30,7 +30,7 @@ team_t team = {
 /* 
  * naive_rotate - The naive baseline version of rotate 
  */
-char naive_rotate_descr[] = "naive_rotate: Naive baseline implementation";
+static char naive_rotate_descr[] = "naive_rotate: Naive baseline implementation";
 void naive_rotate(int dim, pixel *src, pixel *dst) 
 {
 	int i, j;
@@ -46,8 +46,8 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
  */
 static const int STRIP_I = 16;
 static const int STRIP_J = 16;
-char rotate_descr[] = "rotate: Current working version";
-void rotate(int dim, pixel *src, pixel *dst) 
+static char rotate_old_descr[] = "rotate_old: past working version";
+void rotate_old(int dim, pixel *src, pixel *dst) 
 {
 	int i, j;
 	int dimnn = dim - 1;
@@ -58,13 +58,28 @@ void rotate(int dim, pixel *src, pixel *dst)
 			for(int Ni = i; Ni < stop_i; ++Ni){
 				int stop_j = j + STRIP_J;
 				for(int Nj = j; Nj < stop_j; ++Nj){
-					// for(int Nj = j; Nj < j+4; ++Nj){
-					// dst[RIDX(dim-1-j, i, dim)] = src[RIDX(i, j, dim)];
-					// dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
-					// dst[RIDX(dimnn-Nj1, Ni, dim)] = src[RIDX(Ni, Nj1, dim)];
-					// dst[RIDX(dimnn-Nj2, Ni, dim)] = src[RIDX(Ni, Nj2, dim)];
-					// dst[RIDX(dimnn-Nj3, Ni, dim)] = src[RIDX(Ni, Nj3, dim)];
 					dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
+				}
+			}
+		}
+	}
+}
+
+static char rotate_descr[] = "rotate: Current working version";
+void rotate(int dim, pixel *src, pixel *dst) 
+{
+	int i, j;
+	int dimnn = dim - 1;
+	
+	for (i = 0; i < dim; i += STRIP_I){
+		for (j = 0; j < dim; j+= STRIP_J) {
+			int stop_i = i + STRIP_I;
+			for(int Ni = i; Ni < stop_i; ++Ni){
+				int loc = dimnn - Ni;
+				int stop_j = j + STRIP_J;
+				for(int Nj = j; Nj < stop_j; ++Nj){
+					// dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
+					dst[RIDX(Ni, Nj, dim)] = src[RIDX(Nj, loc, dim)];
 				}
 			}
 		}
@@ -82,6 +97,7 @@ void rotate(int dim, pixel *src, pixel *dst)
 void register_rotate_functions() 
 {
 	add_rotate_function(&naive_rotate, naive_rotate_descr);   
+	add_rotate_function(&rotate_old, rotate_old_descr);   
 	add_rotate_function(&rotate, rotate_descr);   
 	/* ... Register additional test functions here */
 }
