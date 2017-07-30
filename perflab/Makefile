@@ -4,7 +4,7 @@ VERSION = 1
 HANDINDIR = build
 
 CC = gcc
-CFLAGS = -Wall -O2 -std=c11
+CFLAGS = -Wall -O2 
 LIBS = -lm
 
 OBJS = clock.o kernels.o fcyc.o driver.o

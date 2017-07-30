@@ -14,7 +14,7 @@
  * reserved.  May not be used, modified, or copied without permission.
  *
  ********************************************************************/
-
+#define _POSIX_C_SOURCE 2
 #include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>

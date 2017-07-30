@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "defs.h"
+#include <assert.h>
 
 /* 
  * Please fill in the following team struct 
@@ -46,14 +47,14 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
  */
 
 static const int STRIP_I = 32;
-static const int STRIP_J = 32;
+static const int STRIP_J = 34;
 static char rotate_old_descr[] = "rotate_old: past working version";
 void rotate_old(int dim, pixel* restrict src, pixel* restrict dst) 
 {
 	int Ni, j;
 	int dimnn = dim - 1;
 	
-	for (j = 0; j < dim; j+= STRIP_J) {
+	for (j = 0; j < dim - STRIP_J; j+= STRIP_J) {
 		for (Ni = 0; Ni < dim; Ni++ ){
 			int stop_j = j + STRIP_J;
 			int loc = dimnn - Ni;
@@ -61,6 +62,14 @@ void rotate_old(int dim, pixel* restrict src, pixel* restrict dst)
 				// dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
 				dst[RIDX(Ni, Nj, dim)] = src[RIDX(Nj, loc, dim)];
 			}
+		}
+	}
+	for (Ni = 0; Ni < dim; Ni++ ){
+		int stop_j = dim;
+		int loc = dimnn - Ni;
+		for(int Nj = j; Nj < stop_j; ++Nj){
+			// dst[RIDX(dimnn-Nj, Ni, dim)] = src[RIDX(Ni, Nj, dim)];
+			dst[RIDX(Ni, Nj, dim)] = src[RIDX(Nj, loc, dim)];
 		}
 	}
 }
@@ -92,9 +101,9 @@ void rotate(int dim, pixel* restrict src, pixel* restrict dst)
 
 void register_rotate_functions() 
 {
-	add_rotate_function(&naive_rotate, naive_rotate_descr);   
-	add_rotate_function(&rotate_old, rotate_old_descr);   
-	add_rotate_function(&rotate, rotate_descr);   
+	// add_rotate_function(&naive_rotate, naive_rotate_descr);   
+	// add_rotate_function(&rotate_old, rotate_old_descr);   
+	// add_rotate_function(&rotate, rotate_descr);   
 	/* ... Register additional test functions here */
 }
 
@@ -193,14 +202,50 @@ void naive_smooth(int dim, pixel *src, pixel *dst)
  * smooth - Your current working version of smooth. 
  * IMPORTANT: This is the version you will be graded on
  */
-char smooth_descr[] = "smooth: Current working version";
-void smooth(int dim, pixel *src, pixel *dst) 
+ const int STRIP_I_2 = 32;
+ const int STRIP_J_2 = 32;
+
+
+char smooth_old_descr[] = "smooth: Past version";
+void smooth_old(int dim, pixel *src, pixel *dst) 
 {	
 	int i, j;
 
 	for (i = 0; i < dim; i++)
 	for (j = 0; j < dim; j++)
 		dst[RIDX(i, j, dim)] = avg(dim, i, j, src);
+}
+
+inline pixel pixel_add(pixel a, pixel b){
+	register pixel tmp;
+	tmp.red = a.red + b.red;
+	tmp.green = a.green + b.green;
+	tmp.blue = a.blue + b.blue;
+	return tmp;
+}
+
+const int STRIP_HORIZONTAL = 32;
+char smooth_descr[] = "smooth: Current working version";
+void line_proc(int beg, int end, const pixel* restrict const src, pixel* restrict const dst) {
+	short* src_line = (short*)src;
+	short* dst_line = (short*)dst;
+	for(int i = beg; i < end; ++i){
+		dst_line[i] = src_line[i] + src_line[i - 3] + src_line[i + 3];
+	}
+}
+
+void multiline_add(long* restrict dst_line, long* restrict src1_line, long* restrict src2_line){
+	for(int i = 0; i < STRIP_HORIZONTAL; ++i){
+		dst_line[i] = src1_line[i] + src2_line[i];
+	}
+}
+
+void smooth(const int dim, pixel* restrict const src, pixel* restrict const dst) 
+{	
+	// split into trucks VERTICAL_SIZE * steam processing 
+	// calculate 
+	// calculate 32*6 = 64 byte * 3 (512bits)
+	
 }
 
 
@@ -211,10 +256,11 @@ void smooth(int dim, pixel *src, pixel *dst)
  *     driver program, it will test and report the performance of each
  *     registered test function.  
  *********************************************************************/
-
 void register_smooth_functions() {
-	// add_smooth_function(&smooth, smooth_descr);
 	// add_smooth_function(&naive_smooth, naive_smooth_descr);
+	// add_smooth_function(&smooth_old, smooth_old_descr);
+	
+	// add_smooth_function(&smooth, smooth_descr);
 	/* ... Register additional test functions here */
 }
 
