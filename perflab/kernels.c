@@ -297,7 +297,7 @@ void smooth(const int dim, pixel* restrict const src_raw, pixel* restrict const 
 	debugger(dim, (pixel*)tmp);
 	short* src = (short*) tmp;	
 	short* dst = (short*) dst_raw;	
-	int dim_trans = dim*sizeof(pixel)/sizeof(short);
+	const int dim_trans = dim*sizeof(pixel)/sizeof(short);
 	{
 		int i = 0;
 		{
@@ -320,7 +320,7 @@ void smooth(const int dim, pixel* restrict const src_raw, pixel* restrict const 
 		}
 	}
 
-	for(int i = 1; i < dim - 1; ++i){
+	for(register int i = 1; i < dim - 1; ++i){
 		{
 			int j = 0;
 			int base = i * dim_trans + j;	
@@ -328,10 +328,14 @@ void smooth(const int dim, pixel* restrict const src_raw, pixel* restrict const 
 			dst[base + 1] = (src[base + 1] + src[base + 4]) / 6;
 			dst[base + 2] = (src[base + 2] + src[base + 5]) / 6;
 		}
-		for(int j = 3; j < dim_trans - 3; j++){
-			int base = i * dim_trans + j;	
-			dst[base] = (src[base - 3] + src[base] + src[base + 3]) / 9;
+		short* restrict dst_base = dst + i*dim_trans;
+		short* restrict src_base = src + i*dim_trans;
+		for(register int j = 3; j < dim_trans - 3; j++){
+			// int base = i * dim_trans + j;	
+			// dst[base] = (src[base - 3] + src[base] + src[base + 3]) / 9;
+			dst_base[j] = (src_base[j-3]+src_base[j]+src_base[j+3])/9;
 		}
+
 		{
 			int j = dim_trans - 3;
 			int base = i * dim_trans + j;	
@@ -376,10 +380,10 @@ void smooth(const int dim, pixel* restrict const src_raw, pixel* restrict const 
  *     registered test function.  
  *********************************************************************/
 void register_smooth_functions() {
-	add_smooth_function(&naive_smooth, naive_smooth_descr);
+	// add_smooth_function(&naive_smooth, naive_smooth_descr);
 	// add_smooth_function(&smooth_old, smooth_old_descr);
 	
-	add_smooth_function(&smooth, smooth_descr);
+	// add_smooth_function(&smooth, smooth_descr);
 	/* ... Register additional test functions here */
 }
 
