@@ -45,6 +45,17 @@ void naive_rotate(int dim, pixel *src, pixel *dst)
  * rotate - Your current working version of rotate
  * IMPORTANT: This is the version you will be graded on
  */
+void debugger(int dim, pixel* fuck){
+	// printf("dim = %d\n", dim);
+	// for(int i = 0; i < dim; ++i){
+		// for(int j = 0; j < dim; ++j){
+			// pixel f = fuck[i*dim + j];
+			// printf("%03d ", f.red);
+		// }
+		// printf("\n");
+	// }
+	// printf("---------------\n");
+}
 
 static const int STRIP_I = 32;
 static const int STRIP_J = 34;
@@ -234,20 +245,128 @@ void line_proc(int beg, int end, const pixel* restrict const src, pixel* restric
 	}
 }
 
-void multiline_add(long* restrict dst_line, long* restrict src1_line, long* restrict src2_line){
-	for(int i = 0; i < STRIP_HORIZONTAL; ++i){
-		dst_line[i] = src1_line[i] + src2_line[i];
+
+const int VSTRIP = 32;
+const int HSTRIP = 32;
+void line_cross_fucking(const int dim, char* restrict src_raw, char* restrict dst_raw){	
+	typedef long long T;
+	const int cacheline = 64;
+	T* src = (T*) src_raw;
+	T* dst = (T*) dst_raw;
+	int dim_trans = dim * sizeof(pixel) / sizeof(T);
+	int strip_trans = 3*cacheline/sizeof(T);
+	for(int bigj = 0; bigj < dim_trans; bigj+= strip_trans){
+		// fucking i = 0
+		{
+			int i = 0;
+			for(int j = bigj; j < bigj + strip_trans; ++j){
+				int base = i * dim_trans + j;
+				dst[base] = src[base] + src[base + dim_trans];
+			}
+		}
+		for(int i = 1; i < dim-1; ++i){
+			for(int j = bigj; j < bigj + strip_trans; ++j){
+				int base = i * dim_trans + j;
+				dst[base] = src[base - dim_trans] + src[base] + src[base + dim_trans];
+			}
+		}
+		// fucking i = dim - 1
+		{
+			int i = dim - 1;
+			for(int j = bigj; j < bigj + strip_trans; ++j){
+				int base = i * dim_trans + j;
+				dst[base] = src[base] + src[base - dim_trans];
+			}
+		}
 	}
 }
 
-void smooth(const int dim, pixel* restrict const src, pixel* restrict const dst) 
+void smooth(const int dim, pixel* restrict const src_raw, pixel* restrict const dst_raw) 
 {	
 	// split into trucks VERTICAL_SIZE * steam processing 
 	// calculate 
 	// calculate 32*6 = 64 byte * 3 (512bits)
-	
-}
+	// task 1: for each line, find the best method way calc
+	// or alternatively, do it line by line;
+	// then fuck it with hard method
+	// the head has make the desicion
+	debugger(dim, src_raw);
+	short* tmp = (short*)malloc(dim * dim * sizeof(pixel));
+	line_cross_fucking(dim, (char*)src_raw, (char*)tmp);
+	// printf("fucking\n");
+	debugger(dim, (pixel*)tmp);
+	short* src = (short*) tmp;	
+	short* dst = (short*) dst_raw;	
+	int dim_trans = dim*sizeof(pixel)/sizeof(short);
+	{
+		int i = 0;
+		{
+			int j = 0;
+			int base = i * dim_trans + j;	
+			dst[base + 0] = (src[base + 0] + src[base + 3]) / 4;
+			dst[base + 1] = (src[base + 1] + src[base + 4]) / 4;
+			dst[base + 2] = (src[base + 2] + src[base + 5]) / 4;
+		}
+		for(int j = 3; j < dim_trans - 3; j++){
+			int base = i * dim_trans + j;	
+			dst[base] = (src[base - 3] + src[base] + src[base + 3]) / 6;
+		}
+		{
+			int j = dim_trans - 3;
+			int base = i * dim_trans + j;	
+			dst[base + 0] = (src[base + 0] + src[base - 3]) / 4;
+			dst[base + 1] = (src[base + 1] + src[base - 2]) / 4;
+			dst[base + 2] = (src[base + 2] + src[base - 1]) / 4;
+		}
+	}
 
+	for(int i = 1; i < dim - 1; ++i){
+		{
+			int j = 0;
+			int base = i * dim_trans + j;	
+			dst[base + 0] = (src[base + 0] + src[base + 3]) / 6;
+			dst[base + 1] = (src[base + 1] + src[base + 4]) / 6;
+			dst[base + 2] = (src[base + 2] + src[base + 5]) / 6;
+		}
+		for(int j = 3; j < dim_trans - 3; j++){
+			int base = i * dim_trans + j;	
+			dst[base] = (src[base - 3] + src[base] + src[base + 3]) / 9;
+		}
+		{
+			int j = dim_trans - 3;
+			int base = i * dim_trans + j;	
+			dst[base + 0] = (src[base + 0] + src[base - 3]) / 6;
+			dst[base + 1] = (src[base + 1] + src[base - 2]) / 6;
+			dst[base + 2] = (src[base + 2] + src[base - 1]) / 6;
+		}
+	}
+	{
+		int i = dim - 1;
+		{
+			int j = 0;
+			int base = i * dim_trans + j;	
+			dst[base + 0] = (src[base + 0] + src[base + 3]) / 4;
+			dst[base + 1] = (src[base + 1] + src[base + 4]) / 4;
+			dst[base + 2] = (src[base + 2] + src[base + 5]) / 4;
+		}
+		for(int j = 3; j < dim_trans - 3; j++){
+			int base = i * dim_trans + j;	
+			dst[base] = (src[base - 3] + src[base] + src[base + 3]) / 6;
+		}
+		{
+			int j = dim_trans - 3;
+			int base = i * dim_trans + j;	
+			dst[base + 0] = (src[base + 0] + src[base - 3]) / 4;
+			dst[base + 1] = (src[base + 1] + src[base - 2]) / 4;
+			dst[base + 2] = (src[base + 2] + src[base - 1]) / 4;
+		}
+	}
+
+
+	//fucking last
+	debugger(dim, (pixel*)dst);
+	free(tmp);
+}
 
 /********************************************************************* 
  * register_smooth_functions - Register all of your different versions
@@ -257,10 +376,10 @@ void smooth(const int dim, pixel* restrict const src, pixel* restrict const dst)
  *     registered test function.  
  *********************************************************************/
 void register_smooth_functions() {
-	// add_smooth_function(&naive_smooth, naive_smooth_descr);
+	add_smooth_function(&naive_smooth, naive_smooth_descr);
 	// add_smooth_function(&smooth_old, smooth_old_descr);
 	
-	// add_smooth_function(&smooth, smooth_descr);
+	add_smooth_function(&smooth, smooth_descr);
 	/* ... Register additional test functions here */
 }
 

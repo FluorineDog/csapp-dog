@@ -4,14 +4,14 @@ VERSION = 1
 HANDINDIR = build
 
 CC = gcc
-CFLAGS = -Wall -O2 
+CFLAGS = -Wall -Ofast
 LIBS = -lm
 
 OBJS = clock.o kernels.o fcyc.o driver.o
 
 all: driver
 
-driver: $(OBJS) fcyc.h clock.h defs.h config.h
+driver: $(OBJS) fcyc.h clock.h defs.h config.h Makefile
 	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o driver
 
 handin:

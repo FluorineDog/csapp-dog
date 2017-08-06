@@ -133,9 +133,9 @@ static void create(int dim)
     for (i = 0; i < dim; i++) {
 	for (j = 0; j < dim; j++) {
 	    /* Original image initialized to random colors */
-	    orig[RIDX(i,j,dim)].red = random_in_interval(0, 65536);
-	    orig[RIDX(i,j,dim)].green = random_in_interval(0, 65536);
-	    orig[RIDX(i,j,dim)].blue = random_in_interval(0, 65536);
+	    orig[RIDX(i,j,dim)].red = random_in_interval(0, 256);
+	    orig[RIDX(i,j,dim)].green = random_in_interval(0, 256);
+	    orig[RIDX(i,j,dim)].blue = random_in_interval(0, 256);
 
 	    /* Copy of original image for checking result */
 	    copy_of_orig[RIDX(i,j,dim)].red = orig[RIDX(i,j,dim)].red;
