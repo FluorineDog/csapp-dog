@@ -1,0 +1,7 @@
+csim
+.csim_results
+*.tar
+*.tmp
+tracegen
+test-*
+*.o
