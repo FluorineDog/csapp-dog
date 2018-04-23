@@ -33,6 +33,7 @@ def computeMissScore(miss, lower, upper, full_score):
 def main():
 
     # Configure maxscores here
+    os.system("make")
     maxscore= {};
     maxscore['csim'] = 27
     maxscore['transc'] = 1
