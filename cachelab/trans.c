@@ -30,15 +30,13 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
  */
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
-  fprintf(stderr, "(%d, %d) %lx %lx\n", M, N, (intptr_t)A, (intptr_t)B);
-  int i, j, tmp, j_base, i_base;
   if (M == 61 && N == 67) {
-    for (j_base = 0; j_base < M; j_base += 8) {
-      for (i = 0; i < N; i++) {
-        for (j = j_base; j < min(M, j_base + 8); j++) {
+    for (int j_base = 0; j_base < M; j_base += 8) {
+      for (int i = 0; i < N; i++) {
+        for (int j = j_base; j < min(M, j_base + 8); j++) {
           // fprintf(stderr, "(%d %d %d:: %d)", i, j, j_base, min(M, j_base +
           // 8)); fprintf(stderr, "%d", (int)(j < min(M, j_base + 8)));
-          tmp = A[i][j];
+          int tmp = A[i][j];
           B[j][i] = tmp;
         }
       }
@@ -46,15 +44,16 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
     return;
   } else {
     // 32 * 8
-    for (i_base = 0; i_base < N; i_base += 8) {
-      for (j_base = 0; j_base < M; j_base += 8) {
-        for (i = 0; i < 8; i++) {
-          for (j = 0; j < 8; j++) {
+    for (int i_base = 0; i_base < N; i_base += 8) {
+      for (int j_base = 0; j_base < M; j_base += 8) {
+        for (int i = 0; i < 8; i++) {
+          for (int j = 0; j < 8; j++) {
             B[i_base + 7 - i][j_base + 7 - j] = A[j_base + i][i_base + j];
           }
         }
-        for (i = 0; i < 8; ++i) {
-          for (j = 0; j < 7 - i; j++) {
+        for (int i = 0; i < 8; ++i) {
+          for (int j = 0; j < 7 - i; j++) {
+            int tmp;
             swap(B[i_base + i][j_base + j], B[i_base + 7 - j][j_base + 7 - i]);
           }
         }
