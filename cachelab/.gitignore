@@ -5,3 +5,5 @@ csim
 tracegen
 test-*
 *.o
+.*
+trace.f*

@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include "cachelab.h"
 
-//#define DEBUG_ON
+// #define DEBUG_ON
 #define ADDRESS_LENGTH 64
 
 /* Type: Memory address */
@@ -86,8 +86,13 @@ void initCache() {
 /*
  * freeCache - free allocated memory
  */
-void freeCache() { int i; }
-
+void freeCache() {
+  int i;
+  for (i = 0; i < S; i++) {
+    free(cache[i]);
+  }
+  free(cache);
+}
 /*
  * accessData - Access data at memory address addr.
  *   If it is already in cache, increast hit_count
@@ -95,19 +100,21 @@ void freeCache() { int i; }
  *   Also increase eviction_count if a line is evicted.
  */
 void accessData(mem_addr_t addr) {
-
-  unsigned int eviction_line = 0;
+  // unsigned int eviction_line = 0;
   mem_addr_t set_index = (addr >> b) & set_index_mask;
-  mem_addr_t tag = addr >> (s + b) ;
+  mem_addr_t tag = addr >> (s + b);
   assert(set_index < S);
+  // fprintf(stderr, "^%llx**", set_index);
   cache_line_t* lookup = cache[set_index];
+
   for (int hit = 0; hit < E; ++hit) {
     if (lookup[hit].tag == tag && lookup[hit].valid) {
       // hit
-      memmove(lookup + sizeof(*lookup), lookup, hit * sizeof(*lookup));
+      memmove(&lookup[1], lookup, (unsigned long long )&lookup[hit] - (unsigned long long)lookup);
       lookup[0].tag = tag;
       lookup[0].valid = 1;
       hit_count++;
+      // fprintf(stderr, " hit++\n");
       // for(int i = 0; i < E; ++i){
       //   if(lookup[i].lru < lookup[hit].lru){
       //     ++lookup[i].lru;
@@ -118,11 +125,15 @@ void accessData(mem_addr_t addr) {
     }
   }
   // miss
+  // fprintf(stderr, " miss++");
   miss_count++;
   if (lookup[E - 1].valid) {
+    // fprintf(stderr, " evict++");
     eviction_count++;
   }
-  memmove(lookup + sizeof(*lookup), lookup, (E - 1) * sizeof(*lookup));
+  // fprintf(stderr, "\n");
+
+  memmove(&lookup[1], lookup, (unsigned long long )&lookup[E-1] - (unsigned long long)lookup);
   lookup[0].tag = tag;
   lookup[0].valid = 1;
 }
@@ -136,6 +147,7 @@ void replayTrace(char* trace_fn) {
   unsigned addr;
   int len;
   while (fscanf(trace_fp, "%s%x,%d", ch, &addr, &len) == 3) {
+    // fprintf(stderr, "%s%x,%d", ch, addr, len);
     switch (ch[0]) {
       case 'I':
         break;
@@ -149,7 +161,7 @@ void replayTrace(char* trace_fn) {
         break;
     }
   }
-  fprintf(stderr, "%c", '\n');
+  // fprintf(stderr, "%c", '\n');
   fclose(trace_fp);
 }
 
@@ -214,12 +226,18 @@ int main(int argc, char* argv[]) {
   S = (unsigned int)pow(2, s);
   B = (unsigned int)pow(2, b);
 
+#ifdef DEBUG_ON
+  fprintf(stderr, "DEBUG: S:%u E:%u B:%u trace:%s && ", S, E, B, trace_file);
+  fprintf(stderr, "DEBUG: set_index_mask: %llu\n", set_index_mask);
+#endif
+
+
   /* Initialize cache */
   initCache();
 
 #ifdef DEBUG_ON
-  printf("DEBUG: S:%u E:%u B:%u trace:%s\n", S, E, B, trace_file);
-  printf("DEBUG: set_index_mask: %llu\n", set_index_mask);
+  fprintf(stderr, "DEBUG: S:%u E:%u B:%u trace:%s || ", S, E, B, trace_file);
+  fprintf(stderr, "DEBUG: set_index_mask: %llu\n", set_index_mask);
 #endif
 
   replayTrace(trace_file);

@@ -3,7 +3,7 @@
 # Note: requires a 64-bit x86-64 system 
 #
 CC = gcc
-CFLAGS = -g -Werror -std=c11 -m64
+CFLAGS = -g -Werror -Wall -std=c11 -m64
 
 all: csim test-trans tracegen
 	# Generate a handin tar file each time you compile
