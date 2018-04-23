@@ -53,15 +53,16 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
             B[i_base + 7 - i][j_base + 7 - j] = A[j_base + i][i_base + j];
           }
         }
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < 8; ++i) {
           for (j = 0; j < 7 - i; j++) {
-            swap(B[i_base + i][j_base + j],  B[j_base + 7 - j][i_base + 7 - i]);
+            swap(B[i_base + i][j_base + j], B[i_base + 7 - j][j_base + 7 - i]);
           }
         }
- 
+
         // for (i = 0; i < 8; i++) {
         //   for (j = 0; j < i; j++) {
-        //     swap(B[i_base + i][j_base + j],  B[i_base + 7 - j][j_base + 7 - i]);
+        //     swap(B[i_base + i][j_base + j],  B[i_base + 7 - j][j_base + 7 -
+        //     i]);
         //   }
         // }
       }
