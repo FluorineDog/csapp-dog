@@ -42,7 +42,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
       }
     }
     return;
-  } else {
+  } else if (M == 32 && N == 32) {
     // 32 * 8
     for (int i_base = 0; i_base < N; i_base += 8) {
       for (int j_base = 0; j_base < M; j_base += 8) {
@@ -57,12 +57,56 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
             swap(B[i_base + i][j_base + j], B[i_base + 7 - j][j_base + 7 - i]);
           }
         }
-        // for (i = 0; i < 8; i++) {
-        //   for (j = 0; j < i; j++) {
-        //     swap(B[i_base + i][j_base + j],  B[i_base + 7 - j][j_base + 7 -
-        //     i]);
-        //   }
-        // }
+      }
+    }
+
+  } else {
+    for (int i_base = 0; i_base < N; i_base += 8) {
+      for (int j_base = 0; j_base < (i_base >= N - 8 ? M - 8 : M);
+           j_base += 8) {
+        for (int i = 0; i < 8; i++) {
+          for (int j = 0; j < 8; j++) {
+            if (i < 4) {
+              B[M - 1 - i][N - j] = A[j_base + i][i_base + j];
+            } else {
+              B[M - 1 - i][N - 8 - j] = A[j_base + i][i_base + j];
+            }
+          }
+        }
+        // do rotation locally
+        for (int i = 0; i < 8; i++) {
+          for (int j = 0; j < 8; j++) {
+            int tmp;
+            if (i < 4) {
+              tmp = B[M - i][N - j];
+            } else {
+              tmp = B[M - i][N - 8 - j];
+            }
+
+            if (j < 4) {
+              A[M - j][N - i] = tmp;
+            } else {
+              A[M - j][N - 8 - i] = tmp;
+            }
+          }
+        }
+        for (int i = 0; i < 8; i++) {
+          for (int j = 0; j < 8; j++) {
+            if (i < 4) {
+              B[i_base + i][j_base + j] = B[M - 1 - i][N - j] ;
+            } else {
+              B[i_base + i][j_base + j] = B[M - 1 - i][N - 8 - j] ;
+            }
+          }
+        }
+      }
+    }
+
+    int i_base = N - 8;
+    int j_base = M - 16;
+    for(int i = i_base; i < i_base + 8; ++i){
+      for(int j = j_base; j < j_base + 16; ++j){
+        B[i][j] = A[j][i];
       }
     }
   }
