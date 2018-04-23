@@ -58,7 +58,6 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
             swap(B[i_base + i][j_base + j], B[i_base + 7 - j][j_base + 7 - i]);
           }
         }
-
         // for (i = 0; i < 8; i++) {
         //   for (j = 0; j < i; j++) {
         //     swap(B[i_base + i][j_base + j],  B[i_base + 7 - j][j_base + 7 -
