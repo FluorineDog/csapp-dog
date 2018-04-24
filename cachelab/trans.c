@@ -48,7 +48,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
       for (int j_base = 0; j_base < M; j_base += 8) {
         for (int i = 0; i < 8; i++) {
           for (int j = 0; j < 8; j++) {
-            B[i_base + 7 - i][j_base + 7 - j] = A[j_base + i][i_base + j];
+            B[i_base + i][j_base + j] = A[j_base + 7 - i][i_base + 7 - j];
           }
         }
         for (int i = 0; i < 8; ++i) {
@@ -61,52 +61,51 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
     }
 
   } else {
-    for (int i_base = 0; i_base < N; i_base += 8) {
-      for (int j_base = 0; j_base < (i_base >= N - 8 ? M - 8 : M);
-           j_base += 8) {
-        for (int i = 0; i < 8; i++) {
-          for (int j = 0; j < 8; j++) {
+    for (int i_base = 0; i_base < M; i_base += 8) {
+      for (int j_base = 0; j_base < N; j_base += 8) {
+        int(*buf)[N] = (int(*)[N])(&B[M-8][N-8]);
+        for (int i = 0; i < 8; ++i) {
+          for (int j = 0; j < 8; ++j) {
             if (i < 4) {
-              B[M - 1 - i][N - j] = A[j_base + i][i_base + j];
+              // B[i_base + i][j_base + j] = A[j_base + 7 - i][i_base + 7 - j];
+              B[i_base + i][j_base + j] = A[j_base + 7 - i][i_base + 7 - j];
             } else {
-              B[M - 1 - i][N - 8 - j] = A[j_base + i][i_base + j];
+              buf[i][j] = A[j_base + 7 - i][i_base + 7 - j];
             }
           }
         }
-        // do rotation locally
-        for (int i = 0; i < 8; i++) {
-          for (int j = 0; j < 8; j++) {
-            int tmp;
+        for (int i = 0; i < 8; ++i) {
+          for (int j = 0; j < 7 - i; j++) {
+            // swap(B[i_base + i][j_base + j], B[i_base + 7 - j][j_base + 7 -
+            // i]);
+            int tmp, tmp2;
             if (i < 4) {
-              tmp = B[M - i][N - j];
+              tmp2 = B[i_base + i][j_base + j];
             } else {
-              tmp = B[M - i][N - 8 - j];
+              // tmp2 = B[i_base + i][j_base + j];
+              tmp2 = buf[i][j];
             }
 
-            if (j < 4) {
-              A[M - j][N - i] = tmp;
+            if (j >= 4) {
+              swap(B[i_base + 7 - j][j_base + 7 - i], tmp2);
             } else {
-              A[M - j][N - 8 - i] = tmp;
+              // swap(B[i_base + 7 - j][j_base + 7 - i], tmp2);
+              swap(buf[7 - j][7 - i], tmp2);
             }
-          }
-        }
-        for (int i = 0; i < 8; i++) {
-          for (int j = 0; j < 8; j++) {
-            if (i < 4) {
-              B[i_base + i][j_base + j] = B[M - 1 - i][N - j] ;
-            } else {
-              B[i_base + i][j_base + j] = B[M - 1 - i][N - 8 - j] ;
-            }
-          }
-        }
-      }
-    }
 
-    int i_base = N - 8;
-    int j_base = M - 16;
-    for(int i = i_base; i < i_base + 8; ++i){
-      for(int j = j_base; j < j_base + 16; ++j){
-        B[i][j] = A[j][i];
+            if (i < 4) {
+              B[i_base + i][j_base + j] = tmp2;
+            } else {
+              // B[i_base + i][j_base + j] = tmp2;
+              buf[i][j] = tmp2;
+            }
+          }
+        }
+        for (int i = 4; i < 8; ++i) {
+          for (int j = 0; j < 8; ++j) {
+            B[i_base + i][j_base + j] = buf[i][j];
+          }
+        }
       }
     }
   }
