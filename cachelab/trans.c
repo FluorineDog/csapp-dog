@@ -69,7 +69,12 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
         if (i_base == anchor || j_base == anchor) {
           // if last_line
           if (i_base == M - 8) {
-            anchor = N - 8;
+            if(j_base >= N - 16){
+              anchor = N - 8;
+            }
+            else{
+              anchor = N - 16;
+            }
           } else {
             anchor = j_base - 8;
             if (anchor < 0) anchor += N;
