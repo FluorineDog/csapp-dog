@@ -61,9 +61,25 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
     }
 
   } else {
+    int anchor = 0;
+    int(*buf)[N] = (int(*)[N])(&B[M - 8][N - 8]);
     for (int i_base = 0; i_base < M; i_base += 8) {
       for (int j_base = 0; j_base < N; j_base += 8) {
-        int(*buf)[N] = (int(*)[N])(&B[M-8][N-8]);
+
+        if (i_base == anchor || j_base == anchor) {
+          // if last_line
+          if (i_base == M - 8) {
+            anchor = N - 8;
+          } else {
+            anchor = j_base - 8;
+            if (anchor < 0) anchor += N;
+            if (anchor == i_base) anchor -= 8;
+            if (anchor < 0) anchor += N;
+          }
+          // anchor = N - 8;
+          buf = (int(*)[N])(&B[M - 8][anchor]);
+        }
+
         for (int i = 0; i < 8; ++i) {
           for (int j = 0; j < 8; ++j) {
             if (i < 4) {
