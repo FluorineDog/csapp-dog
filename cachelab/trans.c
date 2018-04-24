@@ -31,9 +31,9 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
   if (M == 61 && N == 67) {
-    for (int j_base = 0; j_base < M; j_base += 8) {
+    for (int j_base = 0; j_base < M; j_base += 13) {
       for (int i = 0; i < N; i++) {
-        for (int j = j_base; j < min(M, j_base + 8); j++) {
+        for (int j = j_base; j < min(M, j_base + 13); j++) {
           // fprintf(stderr, "(%d %d %d:: %d)", i, j, j_base, min(M, j_base +
           // 8)); fprintf(stderr, "%d", (int)(j < min(M, j_base + 8)));
           int tmp = A[i][j];
