@@ -62,10 +62,12 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
 
   } else {
     int anchor = 0;
+    // define buffer to "proxy" the bottom half of an 8*8 block
     int(*buf)[N] = (int(*)[N])(&B[M - 8][N - 8]);
     for (int i_base = 0; i_base < M; i_base += 8) {
       for (int j_base = 0; j_base < N; j_base += 8) {
-
+        // find the best location of buffer
+        // require: i_base != anchor and j_base != anchor
         if (i_base == anchor || j_base == anchor) {
           // if last_line
           if (i_base == M - 8) {
@@ -76,6 +78,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
               anchor = N - 16;
             }
           } else {
+            // lazy way to avoid frequent eviction of buffer
             anchor = j_base - 8;
             if (anchor < 0) anchor += N;
             if (anchor == i_base) anchor -= 8;
@@ -87,8 +90,9 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
 
         for (int i = 0; i < 8; ++i) {
           for (int j = 0; j < 8; ++j) {
+            // if i < 4, use normal block(i_base, j_base)
+            // if i >= 4, use the proxy buffer
             if (i < 4) {
-              // B[i_base + i][j_base + j] = A[j_base + 7 - i][i_base + 7 - j];
               B[i_base + i][j_base + j] = A[j_base + 7 - i][i_base + 7 - j];
             } else {
               buf[i][j] = A[j_base + 7 - i][i_base + 7 - j];
@@ -97,27 +101,22 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
         }
         for (int i = 0; i < 8; ++i) {
           for (int j = 0; j < 7 - i; j++) {
-            // swap(B[i_base + i][j_base + j], B[i_base + 7 - j][j_base + 7 -
-            // i]);
             int tmp, tmp2;
             if (i < 4) {
               tmp2 = B[i_base + i][j_base + j];
             } else {
-              // tmp2 = B[i_base + i][j_base + j];
               tmp2 = buf[i][j];
             }
 
             if (j >= 4) {
               swap(B[i_base + 7 - j][j_base + 7 - i], tmp2);
             } else {
-              // swap(B[i_base + 7 - j][j_base + 7 - i], tmp2);
               swap(buf[7 - j][7 - i], tmp2);
             }
 
             if (i < 4) {
               B[i_base + i][j_base + j] = tmp2;
             } else {
-              // B[i_base + i][j_base + j] = tmp2;
               buf[i][j] = tmp2;
             }
           }
